@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "php_cm.hpp"
 #include "cm_class.hpp"
 
@@ -56,8 +58,46 @@ PHP_METHOD(cm, __construct)
     obj->cm = cm;
 }
 
+//bool set(char *key, char *value, bool isDependency, char *dependency, long expire)
+PHP_METHOD(cm, set)
+{
+    Cm *cm;
+    cm_object *obj = (cm_object *)zend_object_store_get_object(
+        getThis() TSRMLS_CC);
+    cm = obj->cm;
+    if (cm != NULL) {
+        char *key;
+        int key_len;
+        char *value;
+        int value_len;
+        zend_bool isDependency;
+        char *dependency;
+        int dependency_len;
+        long expire;
+
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|bsl", &key, &key_len, &value, &value_len, &isDependency, &dependency, &dependency_len, &expire) == FAILURE) {
+            RETURN_NULL();
+        }
+        if (strnlen(key, key_len+1) != key_len) {
+            RETURN_STRING("Non-string key!", 1);
+        }
+        if (strnlen(dependency, dependency_len+1) != dependency_len) {
+            RETURN_STRING("Non-string dependency key!", 1);
+        }
+
+
+        if (isDependency == SUCCESS) {
+            RETURN_BOOL(cm->set(key, value, value_len, true, dependency, expire));
+        } else {
+            RETURN_BOOL(cm->set(key, value, value_len, false, dependency, expire));
+        }
+    }
+    RETURN_NULL();
+}
+
 zend_function_entry cm_methods[] = {
     PHP_ME(cm,  __construct,     NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_ME(cm,  set,             NULL, ZEND_ACC_PUBLIC)
     {NULL, NULL, NULL}
 };
 
