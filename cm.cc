@@ -58,6 +58,63 @@ PHP_METHOD(cm, __construct)
     obj->cm = cm;
 }
 
+//bool remove(char *key);
+PHP_METHOD(cm, remove)
+{
+    Cm *cm;
+    cm_object *obj = (cm_object *)zend_object_store_get_object(
+        getThis() TSRMLS_CC);
+    cm = obj->cm;
+    if (cm != NULL) {
+        char *key;
+        int key_len;
+
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key, &key_len) == FAILURE) {
+            RETURN_NULL();
+        }
+        if (strnlen(key, key_len+1) != key_len) {
+            RETURN_STRING("Non-string key!", 1);
+        }
+
+        RETURN_BOOL(cm->remove(key));
+    }
+}
+
+
+//char* get(char *key, size_t *return_value_length)
+PHP_METHOD(cm, get)
+{
+    Cm *cm;
+    cm_object *obj = (cm_object *)zend_object_store_get_object(
+        getThis() TSRMLS_CC);
+    cm = obj->cm;
+    if (cm != NULL) {
+        char *key;
+        int key_len;
+        zend_bool byDependency;
+
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sb", &key, &key_len, &byDependency) == FAILURE) {
+            RETURN_NULL();
+        }
+        if (strnlen(key, key_len+1) != key_len) {
+            RETURN_STRING("Non-string key!", 1);
+        }
+
+        size_t value_length=0;
+        char* value;
+        if (byDependency == SUCCESS) {
+            value = cm->get(key, &value_length, true);
+        } else {
+            value = cm->get(key, &value_length, false);
+        }
+        if (value == NULL) {
+            RETURN_NULL();
+        } else {
+            RETURN_STRINGL(value, value_length, 0);
+        }
+    }
+}
+
 //bool set(char *key, char *value, bool isDependency, char *dependency, long expire)
 PHP_METHOD(cm, set)
 {
@@ -81,10 +138,13 @@ PHP_METHOD(cm, set)
         if (strnlen(key, key_len+1) != key_len) {
             RETURN_STRING("Non-string key!", 1);
         }
+        if (dependency_len == 0) {
+            dependency = new char [1];
+            strcpy(dependency, "");
+        }
         if (strnlen(dependency, dependency_len+1) != dependency_len) {
             RETURN_STRING("Non-string dependency key!", 1);
         }
-
 
         if (isDependency == SUCCESS) {
             RETURN_BOOL(cm->set(key, value, value_len, true, dependency, expire));
@@ -98,6 +158,8 @@ PHP_METHOD(cm, set)
 zend_function_entry cm_methods[] = {
     PHP_ME(cm,  __construct,     NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(cm,  set,             NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(cm,  get,             NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(cm,  remove,          NULL, ZEND_ACC_PUBLIC)
     {NULL, NULL, NULL}
 };
 

@@ -1,7 +1,10 @@
 libtool
 modules/
 include/
-Makefile*
+Makefile
+Makefile.objects
+Makefile.global
+Makefile.fragments
 README
 run-tests.php
 *.la
