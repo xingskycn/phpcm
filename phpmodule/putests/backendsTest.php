@@ -2,7 +2,7 @@
 
 class BackendsTest extends PHPUnit_Framework_TestCase
 {
-/*
+
     public function testSharding()
     {
 	$shardA = [ 'host' => '127.0.0.1', 'port'=>11211 ];
@@ -11,8 +11,9 @@ class BackendsTest extends PHPUnit_Framework_TestCase
 	    $shardA,
 	    $shardB,
 	]);
-	$this->assertTrue($scm->remove("a"), "st-r-1");
-	$this->assertTrue($scm->remove("b"), "st-r-2");
+	//cleanup
+	$scm->remove("a");
+	$scm->remove("b");
 
 	$this->assertTrue($scm->set("a", "valueA"), "st-1");
 	$this->assertTrue($scm->set("b", "valueB"), "st-2");
@@ -25,7 +26,7 @@ class BackendsTest extends PHPUnit_Framework_TestCase
 	$this->assertEquals($scmB->get("a"), "valueA", "st-7");
 	$this->assertNull($scmB->get("b"), "st-8");
     }
-*/
+
     public function testReplication()
     {
 	$replica0 = [ 'host' => '127.0.0.1', 'port'=>11211 ];
