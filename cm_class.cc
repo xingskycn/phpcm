@@ -22,7 +22,7 @@ Cm::Cm() {
 * Public Interface
 */
 
-bool Cm::set(char *key, char *value, int value_len, bool isDependency, char *dependency, long expire)
+bool Cm::set(char *key, char *value, int value_len, char *dependency, long expire)
 {
     bool summary=true;
     int j = backends[key[0]].size();
@@ -34,24 +34,20 @@ bool Cm::set(char *key, char *value, int value_len, bool isDependency, char *dep
     return summary;
 }
 
-char* Cm::get(char *key, size_t *return_value_length, bool byDependency)
+char* Cm::get(char *key, size_t *return_value_length)
 {
     int j = backends[key[0]].size();
     for (int i=0; i<j; i++) {
         char* result = backends[key[0]][i]->get(key, return_value_length);
         if (result != NULL) {
-            if (byDependency) {
-                int newValue_len;
-                char *newValue = this->processGetDependency(result, *return_value_length, &newValue_len);
-                if (newValue_len == 0) {
-		    *return_value_length = 0;
-                    return NULL;
-                } else {
-                    *return_value_length = newValue_len;
-                    return newValue;
-                }
+            int newValue_len;
+            char *newValue = this->processGetDependency(result, *return_value_length, &newValue_len);
+            if (newValue_len == 0) {
+                *return_value_length = 0;
+                return NULL;
             } else {
-                return result;
+                *return_value_length = newValue_len;
+                return newValue;
             }
         }
     }
@@ -81,7 +77,7 @@ char* Cm::processSetDependency(char *value, int value_len, char *dependency, int
     }
     uint_least32_t crc32=0;
     size_t depLen = 0;
-    char *depValue = this->get(dependency, &depLen, true);
+    char *depValue = this->get(dependency, &depLen);
     if (depLen == 0) {
         crc32 = Crc32Empty();
     } else {
@@ -107,7 +103,7 @@ char* Cm::processGetDependency(char *value, int value_len, int *newValue_len)
         
         uint_least32_t crc32 = 0;
         size_t depLen = 0;
-        char *depValue = this->get(depStruct->dependency, &depLen, true);
+        char *depValue = this->get(depStruct->dependency, &depLen);
         if (depLen == 0) {
             crc32 = Crc32Empty();
         } else {

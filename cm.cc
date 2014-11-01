@@ -91,9 +91,8 @@ PHP_METHOD(cm, get)
     if (cm != NULL) {
         char *key;
         int key_len;
-        zend_bool byDependency;
 
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sb", &key, &key_len, &byDependency) == FAILURE) {
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key, &key_len) == FAILURE) {
             RETURN_NULL();
         }
         if (strnlen(key, key_len+1) != key_len) {
@@ -102,11 +101,7 @@ PHP_METHOD(cm, get)
 
         size_t value_length=0;
         char* value;
-        if (byDependency) {
-            value = cm->get(key, &value_length, true);
-        } else {
-            value = cm->get(key, &value_length, false);
-        }
+        value = cm->get(key, &value_length);
         if (value == NULL) {
             RETURN_NULL();
         } else {
@@ -127,12 +122,11 @@ PHP_METHOD(cm, set)
         int key_len;
         char *value;
         int value_len;
-        zend_bool isDependency;
         char *dependency;
         int dependency_len=0;
         long expire=0;
 
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|bsl", &key, &key_len, &value, &value_len, &isDependency, &dependency, &dependency_len, &expire) == FAILURE) {
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|sl", &key, &key_len, &value, &value_len, &dependency, &dependency_len, &expire) == FAILURE) {
             RETURN_NULL();
         }
         if (strnlen(key, key_len+1) != key_len) {
@@ -146,11 +140,7 @@ PHP_METHOD(cm, set)
             RETURN_STRING("Non-string dependency key!", 1);
         }
 
-        if (isDependency == SUCCESS) {
-            RETURN_BOOL(cm->set(key, value, value_len, true, dependency, expire));
-        } else {
-            RETURN_BOOL(cm->set(key, value, value_len, false, dependency, expire));
-        }
+        RETURN_BOOL(cm->set(key, value, value_len, dependency, expire));
     }
     RETURN_NULL();
 }

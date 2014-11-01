@@ -11,9 +11,9 @@ class Cm {
     public:
         Cm();
         //set Value to Key with isDependency feature, with Dependency parent, with Expire time
-        bool set(char *key, char *value, int value_len, bool isDependency, char *dependency, long expire);
+        bool set(char *key, char *value, int value_len, char *dependency, long expire);
         //get Key
-        char* get(char *key, size_t *return_value_length, bool byDependency);
+        char* get(char *key, size_t *return_value_length);
         //remove Key (only this key, no children)
         bool remove(char *key);
     private:
