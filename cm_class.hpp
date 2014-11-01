@@ -16,10 +16,6 @@ class Cm {
         char* get(char *key, size_t *return_value_length, bool byDependency);
         //remove Key (only this key, no children)
         bool remove(char *key);
-        //remove all children Keys (this works only for isDependency keys)
-        bool expire(char *key);
-        //remove all children Keys and self Key (if Key is not isDependency key remove only Key)
-        bool expireOnlyChildren(char *key);
     private:
         std::map<unsigned char, std::vector<CmAdapter*> > backends;
         char* processSetDependency(char *value, int value_len, char *dependency, int *newValue_len);

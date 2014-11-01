@@ -44,6 +44,7 @@ char* Cm::get(char *key, size_t *return_value_length, bool byDependency)
                 int newValue_len;
                 char *newValue = this->processGetDependency(result, *return_value_length, &newValue_len);
                 if (newValue_len == 0) {
+		    *return_value_length = 0;
                     return NULL;
                 } else {
                     *return_value_length = newValue_len;
@@ -54,6 +55,7 @@ char* Cm::get(char *key, size_t *return_value_length, bool byDependency)
             }
         }
     }
+    *return_value_length = 0;
     return NULL;
 }
 
@@ -65,16 +67,6 @@ bool Cm::remove(char *key)
         summary = summary && backends[key[0]][i]->remove(key);
     }
     return summary;
-}
-
-bool Cm::expire(char *key)
-{
-    return true;
-}
-
-bool Cm::expireOnlyChildren(char *key)
-{
-    return true;
 }
 
 /*
@@ -96,7 +88,6 @@ char* Cm::processSetDependency(char *value, int value_len, char *dependency, int
         crc32 = Crc32((const unsigned char *)depValue, depLen);
     }
     size_t outLength;
-//    std::cout << "make dep by string: " << dependency << std::endl;
     CmDependency *depStruct = makeCmDependencyFromName(dependency, crc32, &outLength);
     if (!validateCmDependencyInRaw(depStruct, outLength)) {
 	std::terminate();
@@ -111,7 +102,6 @@ char* Cm::processSetDependency(char *value, int value_len, char *dependency, int
 char* Cm::processGetDependency(char *value, int value_len, int *newValue_len)
 {
     if (validateCmDependencyInRaw(value, value_len)) {
-//        std::cout << "dependency IS valid" << std::endl;
         size_t depStructLen;
         CmDependency *depStruct = makeCmDependencyFromRaw(value, &depStructLen);
         
@@ -138,7 +128,6 @@ char* Cm::processGetDependency(char *value, int value_len, int *newValue_len)
             return newValue;
         }
     } else {
-//        std::cout << "dependency IS NOT valid" << std::endl;
         *newValue_len = value_len;
         return value;
     }
