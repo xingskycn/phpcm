@@ -2,101 +2,100 @@
 
 class CmTest extends PHPUnit_Framework_TestCase
 {
+    private $cm;
+    
+    public function setup()
+    {
+	$this->cm = new Cm([ ['host' => '127.0.0.1', 'port'=>11211] ]);
+    }
+
     public function testConstruct()
     {
-	$cm = new Cm();
+	$cm = new Cm([ ['host'=>'127.0.0.1', 'port'=>11211] ]);
 	$this->assertTrue($cm instanceof Cm);
     }
 
     public function testSet()
     {
-	$cm = new Cm();
-	$this->assertTrue($cm->set("key", "value"));
-	$this->assertTrue($cm->set("key", "value"));
+	$this->assertTrue($this->cm->set("key", "value"));
+	$this->assertTrue($this->cm->set("key", "value"));
     }
     
     public function testSetWithDependency()
     {
-	$cm = new Cm();
-	$this->assertTrue($cm->set("key", "value", "one"));
-	$this->assertTrue($cm->set("key", "value", "one", 3600*24));
+	$this->assertTrue($this->cm->set("key", "value", "one"));
+	$this->assertTrue($this->cm->set("key", "value", "one", 3600*24));
     }
 
     public function testSetInvalidKeys()
     {
-	$cm = new Cm();
-	$this->assertEquals($cm->set("key\000r", "value"), "Non-string key!");
-	$this->assertEquals($cm->set("keyr", "value", "dkey\000rd"), "Non-string dependency key!");
+	$this->assertEquals($this->cm->set("key\000r", "value"), "Non-string key!");
+	$this->assertEquals($this->cm->set("keyr", "value", "dkey\000rd"), "Non-string dependency key!");
     }
 
     public function testGet()
     {
-	$cm = new Cm();
-	$this->assertTrue($cm->set("key", "value"));
-	$this->assertEquals($cm->get("key"), "value");
-	$this->assertNull($cm->get("keyd"));
+	$this->assertTrue($this->cm->set("key", "value"));
+	$this->assertEquals($this->cm->get("key"), "value");
+	$this->assertNull($this->cm->get("keyd"));
     }
 
     public function testDelete()
     {
-	$cm = new Cm();
-	$this->assertTrue($cm->set("key", "value"), "set success");
-	$this->assertTrue($cm->remove("key"), "remove success");
-	$this->assertFalse($cm->remove("key1"), "remove not required");
-	$this->assertNull($cm->get("key"));
+	$this->assertTrue($this->cm->set("key", "value"), "set success");
+	$this->assertTrue($this->cm->remove("key"), "remove success");
+	$this->assertFalse($this->cm->remove("key1"), "remove not required");
+	$this->assertNull($this->cm->get("key"));
     }
 
     public function testCheckDependency()
     {
-	$cm = new Cm();
-	$this->assertTrue($cm->set("one", "dataValid"));
-	$this->assertTrue($cm->set("two", "byDependency", "one"));
-	$this->assertEquals($cm->get("two"), "byDependency");
-	$this->assertTrue($cm->set("one", "dataInvalid"));
-	$this->assertNull($cm->get("two"));
+	$this->assertTrue($this->cm->set("one", "dataValid"));
+	$this->assertTrue($this->cm->set("two", "byDependency", "one"));
+	$this->assertEquals($this->cm->get("two"), "byDependency");
+	$this->assertTrue($this->cm->set("one", "dataInvalid"));
+	$this->assertNull($this->cm->get("two"));
     }
 
     public function testCheckDependencyReturn()
     {
-	$cm = new Cm();
-	$this->assertTrue($cm->set("one", "dataValid"));
-	$this->assertTrue($cm->set("two", "byDependency", "one"));
-	$this->assertEquals($cm->get("two"), "byDependency");
-	$this->assertTrue($cm->set("one", "dataInvalid"));
-	$this->assertNull($cm->get("two"));
-	$this->assertTrue($cm->set("one", "dataValid"));
-	$this->assertEquals($cm->get("two"), "byDependency");
+	$this->assertTrue($this->cm->set("one", "dataValid"));
+	$this->assertTrue($this->cm->set("two", "byDependency", "one"));
+	$this->assertEquals($this->cm->get("two"), "byDependency");
+	$this->assertTrue($this->cm->set("one", "dataInvalid"));
+	$this->assertNull($this->cm->get("two"));
+	$this->assertTrue($this->cm->set("one", "dataValid"));
+	$this->assertEquals($this->cm->get("two"), "byDependency");
     }
 
     public function testCheckDependencyByDependency()
     {
-	$cm = new Cm();
-	$this->assertTrue($cm->set("root", "dataValid1"));
-	$this->assertTrue($cm->set("root/1", "dataValid2", "root"));
-	$this->assertTrue($cm->set("root/1/1", "byDependency", "root/1"));
-	$this->assertEquals($cm->get("root/1/1"), "byDependency");
-	$this->assertTrue($cm->set("root", "dataInValid1"));
-	$this->assertNull($cm->get("root/1/1"));
+	$this->assertTrue($this->cm->set("root", "dataValid1"));
+	$this->assertTrue($this->cm->set("root/1", "dataValid2", "root"));
+	$this->assertTrue($this->cm->set("root/1/1", "byDependency", "root/1"));
+	$this->assertEquals($this->cm->get("root/1/1"), "byDependency");
+	$this->assertTrue($this->cm->set("root", "dataInValid1"));
+	$this->assertNull($this->cm->get("root/1/1"));
     }
 
     public function testSharding()
     {
 	$shardA = [ 'host' => '127.0.0.1', 'port'=>11211 ];
 	$shardB = [ 'host' => '127.0.0.1', 'port'=>11212 ];
-	$cm = new Cm([
+	$scm = new Cm([
 	    $shardA,
 	    $shardB,
 	]);
-	$this->assertTrue($cm->set("a", "valueA"));
-	$this->assertTrue($cm->set("b", "valueB"));
-	$this->assertEquals($cm->get("a"), "valueA");
-	$this->assertEquals($cm->get("b"), "valueB");
-	$cmA = new Cm([$shardA]);
-	$this->assertEquals($cmA->get("a"), "valueA");
-	$this->assertNull($cmA->get("b"));
-	$cmB = new Cm([$shardB]);
-	$this->assertEquals($cmB->get("b"), "valueB");
-	$this->assertNull($cmB->get("a"));
+	$this->assertTrue($scm->set("a", "valueA"));
+	$this->assertTrue($scm->set("b", "valueB"));
+	$this->assertEquals($scm->get("a"), "valueA");
+	$this->assertEquals($scm->get("b"), "valueB");
+	$scmA = new Cm([$shardA]);
+	$this->assertEquals($scmA->get("a"), "valueA");
+	$this->assertNull($scmA->get("b"));
+	$scmB = new Cm([$shardB]);
+	$this->assertEquals($scmB->get("b"), "valueB");
+	$this->assertNull($scmB->get("a"));
     }
 
 }

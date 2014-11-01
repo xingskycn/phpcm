@@ -49,10 +49,11 @@ PHP_METHOD(cm, __construct)
     Cm *cm = NULL;
     zval *object = getThis();
     std::vector<ServerPair> configuration;
+    zval* z_conf;
 
-//    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &maxGear) == FAILURE) {
-//        RETURN_NULL();
-//    }
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &z_conf) == FAILURE) {
+        RETURN_NULL();
+    }
 
     ServerPair sp1 = { .serverName = "127.0.0.1", .port=11211, .stable=true };
     configuration.push_back(sp1);
