@@ -58,7 +58,6 @@ ServerPair makeSPfromPhpArray(zval **data)
 	    if (Z_TYPE_PP(entry) == IS_STRING) {
 	        server.serverName = Z_STRVAL_PP(entry);
 	        server.stable = true;
-//		std::cout << "host:" << server.serverName << std::endl;
 	    } else {
 	        std::cout << "host must be string!" << std::endl;
 	        std::terminate();
@@ -66,7 +65,6 @@ ServerPair makeSPfromPhpArray(zval **data)
 	} else if (zend_hash_find(z_conf_row, "newhost", sizeof("newhost"), (void **) &entry) == SUCCESS) {
 	    if ((Z_TYPE_PP(entry) == IS_STRING)) {
 	        server.serverName = Z_STRVAL_PP(entry);
-//		std::cout << "newhost:" << server.serverName << std::endl;
 	        server.stable = false;
 	    } else {
 	        std::cout << "newhost must be string!" << std::endl;
@@ -80,7 +78,6 @@ ServerPair makeSPfromPhpArray(zval **data)
 	if (zend_hash_find(z_conf_row, "port", sizeof("port"), (void **) &entry) == SUCCESS) {
 	    if (Z_TYPE_PP(entry) == IS_LONG) {
 	        server.port = Z_LVAL_PP(entry);
-//		std::cout << "port:" << server.port << std::endl;
 	    } else {
 	        std::cout << "ERROR: Configuration ROW entry 'port' must be Int" << std::endl;
 	        std::terminate();
@@ -123,10 +120,8 @@ PHP_METHOD(cm, __construct)
 
 	ServerPair server = makeSPfromPhpArray(data);
 	if (server.port > 0) {
-//	    std::cout << "positive port" << std::endl;
 	    configuration.push_back(server);
 	} else if (server.port == -1) { //not 'host' or 'newhost' entry, try replica array
-//	    std::cout << "-1 port" << std::endl;
 	    if (Z_TYPE_PP(data) != IS_ARRAY) {
 		std::cout << "ERROR: configuration ROW is not Array" << std::endl;
 		std::terminate();
@@ -144,11 +139,8 @@ PHP_METHOD(cm, __construct)
 		    std::terminate();
 		}
 		ServerPair server = makeSPfromPhpArray(replicadata);
-//		std::cout << server.port << std::endl;
 		replicas.push_back(server);
 	    }
-//	    std::cout << replicas[0].serverName << std::endl;
-//	    std::cout << replicas[0].port << std::endl;
 	    if (replicas.size() > 0) {
 		ServerPair replica;
 		replica.port = -1;
@@ -159,12 +151,8 @@ PHP_METHOD(cm, __construct)
 	    } else {
 		std::cout << "ERROR: configuration ROW is empty Array" << std::endl;
 	    }
-//	    std::cout << "-1 port - done" << std::endl;
 	}
     }
-//    std::cout << configuration.size() << std::endl;
-//    std::cout << configuration[0].serverName << std::endl;
-//    std::cout << configuration[0].port << std::endl;
     cm = new Cm(configuration);
     cm_object *obj = (cm_object *)zend_object_store_get_object(object TSRMLS_CC);
     obj->cm = cm;
