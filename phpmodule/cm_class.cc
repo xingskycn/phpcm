@@ -1,5 +1,8 @@
 #include <iostream>
+#include <string>
+#include <sstream>
 #include <string.h>
+
 
 #include "cm_class.hpp"
 #include "crc32.h"
@@ -7,20 +10,47 @@
 
 //объявлено ниже
 CmAdapter* newServerPairAdapter(ServerPair config);
+std::vector<CmAdapter*> newServerPairReplica(std::vector<ServerPair>);
 
 /*
 * Object manage
 */
 
 Cm::Cm(std::vector<ServerPair> config) {
-    for (unsigned int i=0; i<config.size(); i++) {
-	realBackends.push_back(newServerPairAdapter(config[i]));
-    }
+    unsigned int j=0;
     for (unsigned int i=0; i<=255; i++) {
-	std::vector<CmAdapter*> one;
-	int node = i % realBackends.size();
-	one.push_back(realBackends[node]);
-	backends[(unsigned char)i] = one;
+	if (!config[j].isReplica) { //single node
+	    std::string hp(config[j].serverName);
+	    std::stringstream ss;
+	    ss << hp << ":" << config[j].port;
+	    ss >> hp;
+	    CmAdapter* backend;
+	    if (realBackends.find(hp) != realBackends.end()) {
+		backend = newServerPairAdapter(config[j]);
+		realBackends[hp] = backend;
+	    } else {
+	        backend = realBackends[hp];
+	    }
+	    std::vector<CmAdapter*> one;
+	    one.push_back(backend);
+	    backends[(unsigned char)i] = one;
+	} else {
+	    std::stringstream ss;
+	    for (unsigned int k=0; k<config[j].replica.size(); k++) {
+		ss << config[j].replica[k].serverName << ":" << config[j].replica[k].port << "|";
+	    }
+	    std::string hp;
+	    ss >> hp;
+	    std::vector<CmAdapter*> repl;
+	    if (realBackendsReplicas.find(hp) != realBackendsReplicas.end()) {
+		repl = newServerPairReplica(config[j].replica);
+	    } else {
+		repl = realBackendsReplicas[hp];
+	    }
+	    backends[(unsigned char)i] = repl;
+	}
+	j++;
+	if (j==config.size()) j=0;
     }
 }
 
@@ -29,9 +59,19 @@ Cm::~Cm() {
 	backends[(unsigned char)i].clear();
     }
     backends.clear();
-    for (unsigned int i=0; i<realBackends.size(); i++) {
-	delete realBackends[i];
+    for (std::map<std::string, CmAdapter*>::iterator it = realBackends.begin(); it != realBackends.end(); ++it)
+    {
+	delete it->second;
     }
+    realBackends.clear();
+    for (std::map<std::string, std::vector<CmAdapter*> >::iterator it = realBackendsReplicas.begin(); it != realBackendsReplicas.end(); ++it)
+    {
+	for (unsigned int i=0; i<it->second.size(); i++) {
+	    delete it->second[i];
+	}
+	it->second.clear();
+    }
+    realBackendsReplicas.clear();
 }
 
 
@@ -150,4 +190,13 @@ CmAdapter* newServerPairAdapter(ServerPair config)
 {
     CmAdapter* backend = new CmAdapter(config.serverName, config.port, config.stable);
     return backend;
+}
+
+std::vector<CmAdapter*> newServerPairReplica(std::vector<ServerPair> list)
+{
+    std::vector<CmAdapter*> replica;
+    for (unsigned int i=0; i<list.size(); i++) {
+	replica.push_back(newServerPairAdapter(list[i]));
+    }
+    return replica;
 }

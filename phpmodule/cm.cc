@@ -44,6 +44,57 @@ zend_object_value cm_create_handler(zend_class_entry *type TSRMLS_DC)
     return retval;
 }
 
+ServerPair makeSPfromPhpArray(zval **data)
+{
+    ServerPair server;
+    server.port = 0;
+    server.isReplica = false;
+    if (Z_TYPE_PP(data) == IS_ARRAY) {
+	HashTable *z_conf_row;
+	z_conf_row = Z_ARRVAL_PP(data);
+	zval **entry;
+
+	if (zend_hash_find(z_conf_row, "host", sizeof("host"), (void **) &entry) == SUCCESS) {
+	    if (Z_TYPE_PP(entry) == IS_STRING) {
+	        server.serverName = Z_STRVAL_PP(entry);
+	        server.stable = true;
+//		std::cout << "host:" << server.serverName << std::endl;
+	    } else {
+	        std::cout << "host must be string!" << std::endl;
+	        std::terminate();
+	    }
+	} else if (zend_hash_find(z_conf_row, "newhost", sizeof("newhost"), (void **) &entry) == SUCCESS) {
+	    if ((Z_TYPE_PP(entry) == IS_STRING)) {
+	        server.serverName = Z_STRVAL_PP(entry);
+//		std::cout << "newhost:" << server.serverName << std::endl;
+	        server.stable = false;
+	    } else {
+	        std::cout << "newhost must be string!" << std::endl;
+	        std::terminate();
+	    }
+	} else {
+	    server.port = -1;
+	    return server;
+	}
+
+	if (zend_hash_find(z_conf_row, "port", sizeof("port"), (void **) &entry) == SUCCESS) {
+	    if (Z_TYPE_PP(entry) == IS_LONG) {
+	        server.port = Z_LVAL_PP(entry);
+//		std::cout << "port:" << server.port << std::endl;
+	    } else {
+	        std::cout << "ERROR: Configuration ROW entry 'port' must be Int" << std::endl;
+	        std::terminate();
+	    }
+	} else {
+	    server.port = 11211;
+	}
+    } else {
+        std::cout << "ERROR: configuration ROW is not Array" << std::endl;
+        std::terminate();
+    }
+    return server;
+}
+
 PHP_METHOD(cm, __construct)
 {
     Cm *cm = NULL;
@@ -70,51 +121,50 @@ PHP_METHOD(cm, __construct)
         zend_hash_get_current_data_ex(z_conf, (void**) &data, &pointer) == SUCCESS;
         zend_hash_move_forward_ex(z_conf, &pointer)) {
 
-	ServerPair server;
-
-        if (Z_TYPE_PP(data) == IS_ARRAY) {
-	    HashTable *z_conf_row;
-	    z_conf_row = Z_ARRVAL_PP(data);
-	    zval **entry;
-	    
-	    if (zend_hash_find(z_conf_row, "host", sizeof("host"), (void **) &entry) == SUCCESS) {
-		if (Z_TYPE_PP(entry) == IS_STRING) {
-		    server.serverName = Z_STRVAL_PP(entry);
-		    server.stable = true;
-		} else {
-		    std::cout << "host must be string!" << std::endl;
-		    std::terminate();
-		}
-	    } else if (zend_hash_find(z_conf_row, "newhost", sizeof("newhost"), (void **) &entry) == SUCCESS) {
-		if ((Z_TYPE_PP(entry) == IS_STRING)) {
-		    server.serverName = Z_STRVAL_PP(entry);
-		    server.stable = false;
-		} else {
-		    std::cout << "newhost must be string!" << std::endl;
-		    std::terminate();
-		}
-	    } else {
-		std::cout << "ERROR: Configuration ROW not have 'host' or 'newhost' keys" << std::endl;
+	ServerPair server = makeSPfromPhpArray(data);
+	if (server.port > 0) {
+//	    std::cout << "positive port" << std::endl;
+	    configuration.push_back(server);
+	} else if (server.port == -1) { //not 'host' or 'newhost' entry, try replica array
+//	    std::cout << "-1 port" << std::endl;
+	    if (Z_TYPE_PP(data) != IS_ARRAY) {
+		std::cout << "ERROR: configuration ROW is not Array" << std::endl;
 		std::terminate();
 	    }
-
-	    if (zend_hash_find(z_conf_row, "port", sizeof("port"), (void **) &entry) == SUCCESS) {
-		if (Z_TYPE_PP(entry) == IS_LONG) {
-		    server.port = Z_LVAL_PP(entry);
-		} else {
-		    std::cout << "ERROR: Configuration ROW entry 'port' must be Int" << std::endl;
+	    HashTable *z_conf_row;
+	    z_conf_row = Z_ARRVAL_PP(data);
+	    std::vector<ServerPair> replicas;
+	    HashPosition rpointer;
+	    zval **replicadata;
+	    for(zend_hash_internal_pointer_reset_ex(z_conf_row, &rpointer);
+	        zend_hash_get_current_data_ex(z_conf_row, (void**) &replicadata, &rpointer) == SUCCESS;
+	        zend_hash_move_forward_ex(z_conf_row, &rpointer)) {
+		if (Z_TYPE_PP(replicadata) != IS_ARRAY) {
+		    std::cout << "ERROR: configuration ROW is not Array and is NOT Array of Replica configuration ROW" << std::endl;
 		    std::terminate();
 		}
-	    } else {
-		server.port = 11211;
+		ServerPair server = makeSPfromPhpArray(replicadata);
+//		std::cout << server.port << std::endl;
+		replicas.push_back(server);
 	    }
-	    configuration.push_back(server);
-        } else {
-	    std::cout << "ERROR: configuration ROW is not array" << std::endl;
-	    std::terminate();
+//	    std::cout << replicas[0].serverName << std::endl;
+//	    std::cout << replicas[0].port << std::endl;
+	    if (replicas.size() > 0) {
+		ServerPair replica;
+		replica.port = -1;
+		replica.stable = false;
+		replica.isReplica = true;
+		replica.replica = replicas;
+		configuration.push_back(replica);
+	    } else {
+		std::cout << "ERROR: configuration ROW is empty Array" << std::endl;
+	    }
+//	    std::cout << "-1 port - done" << std::endl;
 	}
     }
-
+//    std::cout << configuration.size() << std::endl;
+//    std::cout << configuration[0].serverName << std::endl;
+//    std::cout << configuration[0].port << std::endl;
     cm = new Cm(configuration);
     cm_object *obj = (cm_object *)zend_object_store_get_object(object TSRMLS_CC);
     obj->cm = cm;

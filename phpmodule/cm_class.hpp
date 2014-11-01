@@ -1,6 +1,7 @@
 #ifndef CM_CM_H
 #define CM_CM_H
 
+#include <string>
 #include <map>
 #include <vector>
 
@@ -20,7 +21,8 @@ class Cm {
         bool remove(char *key);
     private:
         std::map<unsigned char, std::vector<CmAdapter*> > backends;
-        std::vector<CmAdapter*> realBackends;
+        std::map<std::string, CmAdapter*> realBackends;
+        std::map<std::string, std::vector<CmAdapter*> > realBackendsReplicas;
         char* processSetDependency(char *value, int value_len, char *dependency, int *newValue_len);
         char* processGetDependency(char *value, int value_len, int *newValue_len);
 };
