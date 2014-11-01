@@ -42,4 +42,26 @@ class BackendsTest extends PHPUnit_Framework_TestCase
 	$this->assertEquals($rcm1->get("replicated"), "valueR", "eq-2");
     }
 
+    public function testReplicationAndSharding()
+    {
+	$replica0 = [ 'host' => '127.0.0.1', 'port'=>11211 ];
+	$replica1 = [ 'host' => '127.0.0.1', 'port'=>11212 ];
+	$shardA = [ $replica0, $replica1 ];
+	$shardB = [ 'host' => '127.0.0.1', 'port'=>11221 ];
+	$scm = new Cm([
+	    $shardA,
+	    $shardB
+	]);
+	$scm->remove("a");
+	$scm->remove("b");
+
+	$this->assertTrue($scm->set("a", "valueA"), "set success a");
+	$this->assertTrue($scm->set("b", "valueB"), "set success b");
+	$scmA = new Cm([ $shardA ]);
+	$this->assertEquals($scmA->get("b"), "valueB", "eq-1");
+	$scmB = new Cm([ $shardB ]);
+	$this->assertEquals($scmB->get("a"), "valueA", "eq-2");
+    }
+
+
 }
