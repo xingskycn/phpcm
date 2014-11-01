@@ -86,16 +86,16 @@ class CmTest extends PHPUnit_Framework_TestCase
 	    $shardA,
 	    $shardB,
 	]);
-	$this->assertTrue($scm->set("a", "valueA"));
-	$this->assertTrue($scm->set("b", "valueB"));
-	$this->assertEquals($scm->get("a"), "valueA");
-	$this->assertEquals($scm->get("b"), "valueB");
+	$this->assertTrue($scm->set("a", "valueA"), "st-1");
+	$this->assertTrue($scm->set("b", "valueB"), "st-2");
+	$this->assertEquals($scm->get("a"), "valueA", "st-3");
+	$this->assertEquals($scm->get("b"), "valueB", "st-4");
 	$scmA = new Cm([$shardA]);
-	$this->assertEquals($scmA->get("a"), "valueA");
-	$this->assertNull($scmA->get("b"));
+	$this->assertEquals($scmA->get("b"), "valueB", "st-5");
+	$this->assertNull($scmA->get("a"), "st-6");
 	$scmB = new Cm([$shardB]);
-	$this->assertEquals($scmB->get("b"), "valueB");
-	$this->assertNull($scmB->get("a"));
+	$this->assertEquals($scmB->get("a"), "valueA", "st-7");
+	$this->assertNull($scmB->get("b"), "st-8");
     }
 
 }

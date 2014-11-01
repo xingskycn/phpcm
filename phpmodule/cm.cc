@@ -49,16 +49,72 @@ PHP_METHOD(cm, __construct)
     Cm *cm = NULL;
     zval *object = getThis();
     std::vector<ServerPair> configuration;
-    zval* z_conf;
+    zval* zval_conf;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &z_conf) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &zval_conf) == FAILURE) {
         RETURN_NULL();
     }
 
-    ServerPair sp1 = { .serverName = "127.0.0.1", .port=11211, .stable=true };
-    configuration.push_back(sp1);
-    ServerPair sp2 = { .serverName = "127.0.0.1", .port=11212, .stable=true };
-    configuration.push_back(sp2);
+    if (Z_TYPE_P(zval_conf) != IS_ARRAY) {
+	std::cout << "ERROR: configuration is not array" << std::endl;
+	std::terminate();
+	//error
+    }
+
+    HashTable *z_conf;
+    z_conf = Z_ARRVAL_P(zval_conf);
+
+    HashPosition pointer;
+    zval **data;
+    for(zend_hash_internal_pointer_reset_ex(z_conf, &pointer);
+        zend_hash_get_current_data_ex(z_conf, (void**) &data, &pointer) == SUCCESS;
+        zend_hash_move_forward_ex(z_conf, &pointer)) {
+
+	ServerPair server;
+
+        if (Z_TYPE_PP(data) == IS_ARRAY) {
+	    HashTable *z_conf_row;
+	    z_conf_row = Z_ARRVAL_PP(data);
+	    zval **entry;
+	    
+	    if (zend_hash_find(z_conf_row, "host", sizeof("host"), (void **) &entry) == SUCCESS) {
+		if (Z_TYPE_PP(entry) == IS_STRING) {
+		    server.serverName = Z_STRVAL_PP(entry);
+		    server.stable = true;
+		} else {
+		    std::cout << "host must be string!" << std::endl;
+		    std::terminate();
+		}
+	    } else if (zend_hash_find(z_conf_row, "newhost", sizeof("newhost"), (void **) &entry) == SUCCESS) {
+		if ((Z_TYPE_PP(entry) == IS_STRING)) {
+		    server.serverName = Z_STRVAL_PP(entry);
+		    server.stable = false;
+		} else {
+		    std::cout << "newhost must be string!" << std::endl;
+		    std::terminate();
+		}
+	    } else {
+		std::cout << "ERROR: Configuration ROW not have 'host' or 'newhost' keys" << std::endl;
+		std::terminate();
+	    }
+
+	    if (zend_hash_find(z_conf_row, "port", sizeof("port"), (void **) &entry) == SUCCESS) {
+		if (Z_TYPE_PP(entry) == IS_LONG) {
+		    server.port = Z_LVAL_PP(entry);
+		} else {
+		    std::cout << "ERROR: Configuration ROW entry 'port' must be Int" << std::endl;
+		    std::terminate();
+		}
+	    } else {
+		server.port = 11211;
+	    }
+	    configuration.push_back(server);
+        } else {
+	    std::cout << "ERROR: configuration ROW is not array" << std::endl;
+	    std::terminate();
+	}
+    }
+
     cm = new Cm(configuration);
     cm_object *obj = (cm_object *)zend_object_store_get_object(object TSRMLS_CC);
     obj->cm = cm;
