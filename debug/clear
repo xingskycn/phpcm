@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 make clean
 rm -rf CMakeFiles/ CMakeCache.txt cmake_install.cmake
