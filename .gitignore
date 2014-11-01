@@ -27,4 +27,4 @@ mkinstalldirs
 install-sh
 .deps
 .libs/
-
+core

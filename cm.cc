@@ -102,7 +102,7 @@ PHP_METHOD(cm, get)
 
         size_t value_length=0;
         char* value;
-        if (byDependency == SUCCESS) {
+        if (byDependency) {
             value = cm->get(key, &value_length, true);
         } else {
             value = cm->get(key, &value_length, false);
@@ -110,7 +110,7 @@ PHP_METHOD(cm, get)
         if (value == NULL) {
             RETURN_NULL();
         } else {
-            RETURN_STRINGL(value, value_length, 0);
+            RETURN_STRINGL(value, value_length, 1);
         }
     }
 }
@@ -129,8 +129,8 @@ PHP_METHOD(cm, set)
         int value_len;
         zend_bool isDependency;
         char *dependency;
-        int dependency_len;
-        long expire;
+        int dependency_len=0;
+        long expire=0;
 
         if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|bsl", &key, &key_len, &value, &value_len, &isDependency, &dependency, &dependency_len, &expire) == FAILURE) {
             RETURN_NULL();

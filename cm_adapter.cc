@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include <libmemcached/memcached.h>
 
 #include "cm_adapter.hpp"
@@ -28,7 +26,7 @@ bool CmAdapter::set(char* key, char* val, int val_len, long expire)
 char* CmAdapter::get(char *key, size_t *return_value_length)
 {
     uint32_t flags=0;
-    memcached_return error;
+    memcached_return_t error;
     return memcached_get(memc, key, strlen (key), return_value_length, &flags, &error);
 }
 

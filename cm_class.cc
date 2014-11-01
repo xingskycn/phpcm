@@ -1,7 +1,9 @@
+#include <iostream>
 #include <string.h>
 
 #include "cm_class.hpp"
 #include "crc32.h"
+#include "cm_dependency.hpp"
 
 /*
 * Object manage
@@ -23,18 +25,20 @@ Cm::Cm() {
 bool Cm::set(char *key, char *value, int value_len, bool isDependency, char *dependency, long expire)
 {
     bool summary=true;
-    for (auto adapter : backends[key[0]]) {
+    int j = backends[key[0]].size();
+    for (int i=0; i<j; i++) {
         int newValue_len=0;
         char* newValue = this->processSetDependency(value, value_len, dependency, &newValue_len);
-        summary = summary && adapter->set(key, newValue, newValue_len, expire);
+        summary = summary && backends[key[0]][i]->set(key, newValue, newValue_len, expire);
     }
     return summary;
 }
 
 char* Cm::get(char *key, size_t *return_value_length, bool byDependency)
 {
-    for (auto adapter : backends[key[0]]) {
-        char* result = adapter->get(key, return_value_length);
+    int j = backends[key[0]].size();
+    for (int i=0; i<j; i++) {
+        char* result = backends[key[0]][i]->get(key, return_value_length);
         if (result != NULL) {
             if (byDependency) {
                 int newValue_len;
@@ -56,8 +60,9 @@ char* Cm::get(char *key, size_t *return_value_length, bool byDependency)
 bool Cm::remove(char *key)
 {
     bool summary=true;
-    for (auto adapter : backends[key[0]]) {
-        summary = summary && adapter->remove(key);
+    int j = backends[key[0]].size();
+    for (int i=0; i<j; i++) {
+        summary = summary && backends[key[0]][i]->remove(key);
     }
     return summary;
 }
@@ -84,51 +89,46 @@ char* Cm::processSetDependency(char *value, int value_len, char *dependency, int
     }
     uint_least32_t crc32=0;
     size_t depLen = 0;
-    char *depValue = this->get(dependency, &depLen);
+    char *depValue = this->get(dependency, &depLen, true);
     if (depLen == 0) {
         crc32 = Crc32Empty();
     } else {
         crc32 = Crc32((const unsigned char *)depValue, depLen);
     }
-    *newValue_len = sizeof(char)*4 + sizeof(uint_least32_t) + value_len;
+    size_t outLength;
+    CmDependency *depStruct = makeCmDependencyFromName(dependency, crc32, &outLength);
+    *newValue_len = value_len + outLength;
     char *newValue = new char [*newValue_len];
-    char tmp[] = "DEP";
-    memcpy(newValue, &tmp, sizeof(char)*4);
-    memcpy(newValue+sizeof("DEP"), &crc32, sizeof(uint_least32_t));
-    memcpy(newValue+sizeof("DEP")+sizeof(uint_least32_t), value, value_len);
+    memcpy(newValue, depStruct, outLength);
+    memcpy(newValue + outLength, value, value_len);
     return newValue;
 }
 
 char* Cm::processGetDependency(char *value, int value_len, int *newValue_len)
 {
-    if (
-        (value[0] == 'D') &&
-        (value[1] == 'E') &&
-        (value[2] == 'P') &&
-        (value[3] == '\0')
-    ) {
-        uint_least32_t ocrc32=0;
-        memcpy(&ocrc32, value+sizeof(char)*4, sizeof(uint_least32_t));
+    if (validateCmDependencyInRaw(value, value_len)) {
+        size_t depStructLen;
+        CmDependency *depStruct = makeCmDependencyFromRaw(value, &depStructLen);
         
-        uint_least32_t crc32=0;
+        uint_least32_t crc32 = 0;
         size_t depLen = 0;
-        char *depValue = this->get(dependency, &depLen);
+        char *depValue = this->get(depStruct->dependency, &depLen, true);
         if (depLen == 0) {
             crc32 = Crc32Empty();
         } else {
             crc32 = Crc32((const unsigned char *)depValue, depLen);
         }
-        if (crc32 != ocrc32) {
+        if (crc32 != depStruct->crc32) {
             delete value;
             *newValue_len = 0;
             return NULL;
         } else {
-            *newValue_len = value_len - sizeof(uint_least32_t) - sizeof(char)*4;
+            *newValue_len = value_len - depStructLen;
             if (*newValue_len <= 0) {
                 return NULL;
             }
             char *newValue = new char [*newValue_len];
-            memcpy(newValue, value+sizeof(uint_least32_t) + sizeof(char)*4);
+            memcpy(newValue, value+depStructLen, *newValue_len);
             delete value;
             return newValue;
         }
