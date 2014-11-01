@@ -96,17 +96,22 @@ char* Cm::processSetDependency(char *value, int value_len, char *dependency, int
         crc32 = Crc32((const unsigned char *)depValue, depLen);
     }
     size_t outLength;
+//    std::cout << "make dep by string: " << dependency << std::endl;
     CmDependency *depStruct = makeCmDependencyFromName(dependency, crc32, &outLength);
+    if (!validateCmDependencyInRaw(depStruct, outLength)) {
+	std::terminate();
+    }
     *newValue_len = value_len + outLength;
     char *newValue = new char [*newValue_len];
     memcpy(newValue, depStruct, outLength);
-    memcpy(newValue + outLength, value, value_len);
+    memcpy( (char*)((long)newValue + (int)outLength), value, value_len);
     return newValue;
 }
 
 char* Cm::processGetDependency(char *value, int value_len, int *newValue_len)
 {
     if (validateCmDependencyInRaw(value, value_len)) {
+//        std::cout << "dependency IS valid" << std::endl;
         size_t depStructLen;
         CmDependency *depStruct = makeCmDependencyFromRaw(value, &depStructLen);
         
@@ -133,6 +138,7 @@ char* Cm::processGetDependency(char *value, int value_len, int *newValue_len)
             return newValue;
         }
     } else {
+//        std::cout << "dependency IS NOT valid" << std::endl;
         *newValue_len = value_len;
         return value;
     }

@@ -56,4 +56,17 @@ class CmTest extends PHPUnit_Framework_TestCase
 	$this->assertNull($cm->get("two", true));
     }
 
+    public function testCheckDependencyReturn()
+    {
+	$cm = new Cm();
+	$this->assertTrue($cm->set("one", "dataValid", true));
+	$this->assertTrue($cm->set("two", "byDependency", true, "one"));
+	$this->assertEquals($cm->get("two", true), "byDependency");
+	$this->assertTrue($cm->set("one", "dataInvalid", true));
+	$this->assertNull($cm->get("two", true));
+	$this->assertTrue($cm->set("one", "dataValid", true));
+	$this->assertEquals($cm->get("two", true), "byDependency");
+    }
+
+
 }
