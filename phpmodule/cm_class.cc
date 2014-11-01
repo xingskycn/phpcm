@@ -5,18 +5,35 @@
 #include "crc32.h"
 #include "cm_dependency.hpp"
 
+//объявлено ниже
+CmAdapter* newServerPairAdapter(ServerPair config);
+
 /*
 * Object manage
 */
 
-Cm::Cm() {
-    CmAdapter* adapter = new CmAdapter();
+Cm::Cm(std::vector<ServerPair> config) {
+    for (unsigned int i=0; i<config.size(); i++) {
+	realBackends.push_back(newServerPairAdapter(config[i]));
+    }
     for (unsigned int i=0; i<=255; i++) {
 	std::vector<CmAdapter*> one;
-	one.push_back(adapter);
+	int node = i % realBackends.size();
+	one.push_back(realBackends[node]);
 	backends[(unsigned char)i] = one;
     }
 }
+
+Cm::~Cm() {
+    for (unsigned int i=0; i<=255; i++) {
+	backends[(unsigned char)i].clear();
+    }
+    backends.clear();
+    for (unsigned int i=0; i<realBackends.size(); i++) {
+	delete realBackends[i];
+    }
+}
+
 
 /*
 * Public Interface
@@ -127,4 +144,10 @@ char* Cm::processGetDependency(char *value, int value_len, int *newValue_len)
         *newValue_len = value_len;
         return value;
     }
+}
+
+CmAdapter* newServerPairAdapter(ServerPair config)
+{
+    CmAdapter* backend = new CmAdapter(config.serverName, config.port, config.stable);
+    return backend;
 }

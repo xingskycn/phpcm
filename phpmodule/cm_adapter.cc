@@ -1,10 +1,15 @@
+#include <iostream>
+#include <stdio.h>
+
 #include <libmemcached/memcached.h>
 
 #include "cm_adapter.hpp"
 
-CmAdapter::CmAdapter()
+CmAdapter::CmAdapter(const char* serverName, int serverPort, bool stable)
 {
-    const char *config_string= "--SERVER=localhost";
+    this->stable = stable;
+    char *config_string= new char [strlen(serverName)+strlen("--SERVER=:")+1+6];
+    sprintf(config_string, "--SERVER=%s:%d", serverName, serverPort);
     memc= memcached(config_string, strlen(config_string));
 }
 
@@ -37,4 +42,9 @@ bool CmAdapter::remove(char *key)
     } else {
         return false;
     }
+}
+
+bool CmAdapter::isStable()
+{
+    return this->stable;
 }

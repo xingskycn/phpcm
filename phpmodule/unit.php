@@ -79,4 +79,24 @@ class CmTest extends PHPUnit_Framework_TestCase
 	$this->assertNull($cm->get("root/1/1"));
     }
 
+    public function testSharding()
+    {
+	$shardA = [ 'host' => '127.0.0.1', 'port'=>11211 ];
+	$shardB = [ 'host' => '127.0.0.1', 'port'=>11212 ];
+	$cm = new Cm([
+	    $shardA,
+	    $shardB,
+	]);
+	$this->assertTrue($cm->set("a", "valueA"));
+	$this->assertTrue($cm->set("b", "valueB"));
+	$this->assertEquals($cm->get("a"), "valueA");
+	$this->assertEquals($cm->get("b"), "valueB");
+	$cmA = new Cm([$shardA]);
+	$this->assertEquals($cmA->get("a"), "valueA");
+	$this->assertNull($cmA->get("b"));
+	$cmB = new Cm([$shardB]);
+	$this->assertEquals($cmB->get("b"), "valueB");
+	$this->assertNull($cmB->get("a"));
+    }
+
 }

@@ -5,11 +5,13 @@
 #include <vector>
 
 #include "cm_adapter.hpp"
+#include "cm_ServerPair.hpp"
 
 // A very simple car class
 class Cm {
     public:
-        Cm();
+        Cm(std::vector<ServerPair> config);
+        ~Cm();
         //set Value to Key with isDependency feature, with Dependency parent, with Expire time
         bool set(char *key, char *value, int value_len, char *dependency, long expire);
         //get Key
@@ -18,6 +20,7 @@ class Cm {
         bool remove(char *key);
     private:
         std::map<unsigned char, std::vector<CmAdapter*> > backends;
+        std::vector<CmAdapter*> realBackends;
         char* processSetDependency(char *value, int value_len, char *dependency, int *newValue_len);
         char* processGetDependency(char *value, int value_len, int *newValue_len);
 };

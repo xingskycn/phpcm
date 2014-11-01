@@ -2,6 +2,7 @@
 
 #include "php_cm.hpp"
 #include "cm_class.hpp"
+#include "cm_ServerPair.hpp"
 
 zend_class_entry *cm_ce;
 
@@ -45,15 +46,19 @@ zend_object_value cm_create_handler(zend_class_entry *type TSRMLS_DC)
 
 PHP_METHOD(cm, __construct)
 {
-//    long maxGear;
     Cm *cm = NULL;
     zval *object = getThis();
+    std::vector<ServerPair> configuration;
 
 //    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &maxGear) == FAILURE) {
 //        RETURN_NULL();
 //    }
 
-    cm = new Cm();
+    ServerPair sp1 = { .serverName = "127.0.0.1", .port=11211, .stable=true };
+    configuration.push_back(sp1);
+    ServerPair sp2 = { .serverName = "127.0.0.1", .port=11212, .stable=true };
+    configuration.push_back(sp2);
+    cm = new Cm(configuration);
     cm_object *obj = (cm_object *)zend_object_store_get_object(object TSRMLS_CC);
     obj->cm = cm;
 }
