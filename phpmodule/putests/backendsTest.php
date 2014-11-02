@@ -11,18 +11,26 @@ class BackendsTest extends PHPUnit_Framework_TestCase
 	    $shardA,
 	    $shardB,
 	]);
+	$scmA = new Cm([$shardA]);
+	$scmB = new Cm([$shardB]);
+
 	//cleanup
 	$scm->remove("a");
 	$scm->remove("b");
+	$scmA->remove("a");
+	$scmA->remove("b");
+	$scmB->remove("a");
+	$scmB->remove("b");
+
 
 	$this->assertTrue($scm->set("a", "valueA"), "st-1");
 	$this->assertTrue($scm->set("b", "valueB"), "st-2");
 	$this->assertEquals($scm->get("a"), "valueA", "st-3");
 	$this->assertEquals($scm->get("b"), "valueB", "st-4");
-	$scmA = new Cm([$shardA]);
+
 	$this->assertEquals($scmA->get("b"), "valueB", "st-5");
 	$this->assertNull($scmA->get("a"), "st-6");
-	$scmB = new Cm([$shardB]);
+
 	$this->assertEquals($scmB->get("a"), "valueA", "st-7");
 	$this->assertNull($scmB->get("b"), "st-8");
     }
