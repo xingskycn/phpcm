@@ -2,3 +2,4 @@
 
 make clean
 rm -rf libtool modules/ include/ Makefile Makefile.objects Makefile.global Makefile.fragments README run-tests.php *.la *.lo *.guess *.in* config.h config.log config.nice config.status config.sub configure autom4te.cache/ aclocal.m4 acinclude.m4 build/ missing ltmain.sh mkinstalldirs install-sh .deps .libs/ core
+rm -rf CMakeCache.txt CMakeFiles cmake_install.cmake install_manifest.txt
