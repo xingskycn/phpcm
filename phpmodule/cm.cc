@@ -59,7 +59,7 @@ ServerPair makeSPfromPhpArray(zval **data)
 	        server.serverName = Z_STRVAL_PP(entry);
 	        server.stable = true;
 	    } else {
-		zend_error(E_ERROR, "'host' must be String");
+		zend_error(E_RECOVERABLE_ERROR, "'host' must be String");
 		return server;
 	    }
 	} else if (zend_hash_find(z_conf_row, "newhost", sizeof("newhost"), (void **) &entry) == SUCCESS) {
@@ -67,7 +67,7 @@ ServerPair makeSPfromPhpArray(zval **data)
 	        server.serverName = Z_STRVAL_PP(entry);
 	        server.stable = false;
 	    } else {
-		zend_error(E_ERROR, "'newhost' must be String");
+		zend_error(E_RECOVERABLE_ERROR, "'newhost' must be String");
 		return server;
 	    }
 	} else {
@@ -79,14 +79,14 @@ ServerPair makeSPfromPhpArray(zval **data)
 	    if (Z_TYPE_PP(entry) == IS_LONG) {
 	        server.port = Z_LVAL_PP(entry);
 	    } else {
-		zend_error(E_ERROR, "'port' must be Int");
+		zend_error(E_RECOVERABLE_ERROR, "'port' must be Int");
 		return server;
 	    }
 	} else {
 	    server.port = 11211;
 	}
     } else {
-	zend_error(E_ERROR, "configuration Row is not Array");
+	zend_error(E_RECOVERABLE_ERROR, "configuration Row is not Array");
 	return server;
     }
     return server;
@@ -104,7 +104,7 @@ PHP_METHOD(cm, __construct)
     }
 
     if (Z_TYPE_P(zval_conf) != IS_ARRAY) {
-	zend_error(E_ERROR, "configuration is not Array");
+	zend_error(E_RECOVERABLE_ERROR, "configuration is not Array");
 	RETURN_NULL();
     }
 
@@ -122,7 +122,7 @@ PHP_METHOD(cm, __construct)
 	    configuration.push_back(server);
 	} else if (server.port == -1) { //not 'host' or 'newhost' entry, try replica array
 	    if (Z_TYPE_PP(data) != IS_ARRAY) {
-		zend_error(E_ERROR, "configuration ROW is not Array");
+		zend_error(E_RECOVERABLE_ERROR, "configuration ROW is not Array");
 		RETURN_NULL();
 	    }
 	    HashTable *z_conf_row;
@@ -134,11 +134,18 @@ PHP_METHOD(cm, __construct)
 	        zend_hash_get_current_data_ex(z_conf_row, (void**) &replicadata, &rpointer) == SUCCESS;
 	        zend_hash_move_forward_ex(z_conf_row, &rpointer)) {
 		if (Z_TYPE_PP(replicadata) != IS_ARRAY) {
-		    zend_error(E_ERROR, "configuration ROW is not Array and is NOT Array of Replica configuration ROW");
+		    zend_error(E_RECOVERABLE_ERROR, "configuration ROW is not Array and is NOT Array of Replica configuration ROW");
 		    RETURN_NULL();
 		}
 		ServerPair server = makeSPfromPhpArray(replicadata);
-		replicas.push_back(server);
+		if (server.port > 0) {
+		    replicas.push_back(server);
+		} else if (server.port == -1) {
+		    zend_error(E_RECOVERABLE_ERROR, "configuration ROW is not has not 'host' or 'newhost' entry");
+		    RETURN_NULL();
+		} else if (server.port == 0) {
+		    RETURN_NULL();
+		}
 	    }
 	    if (replicas.size() > 0) {
 		ServerPair replica;
@@ -148,10 +155,16 @@ PHP_METHOD(cm, __construct)
 		replica.replica = replicas;
 		configuration.push_back(replica);
 	    } else {
-		zend_error(E_ERROR, "configuration ROW is empty Array");
+		zend_error(E_RECOVERABLE_ERROR, "configuration ROW is empty Array");
 		RETURN_NULL();
 	    }
+	} else if (server.port == 0) {
+	    RETURN_NULL();
 	}
+    }
+    if (configuration.size() == 0) {
+	zend_error(E_RECOVERABLE_ERROR, "configuration is Empty");
+	RETURN_NULL();
     }
     cm = new Cm(configuration);
     cm_object *obj = (cm_object *)zend_object_store_get_object(object TSRMLS_CC);
