@@ -165,6 +165,9 @@ PHP_METHOD(cm, __construct)
     if (configuration.size() == 0) {
 	zend_error(E_RECOVERABLE_ERROR, "configuration is Empty");
 	RETURN_NULL();
+    } else if (configuration.size() > 254) {
+	zend_error(E_RECOVERABLE_ERROR, "configuration too big");
+	RETURN_NULL();
     }
     cm = new Cm(configuration);
     cm_object *obj = (cm_object *)zend_object_store_get_object(object TSRMLS_CC);
