@@ -1,4 +1,7 @@
-<phpunit>
+<phpunit convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         stopOnFailure="false">
   <testsuites>
     <testsuite name="putests">
       <directory>putests</directory>

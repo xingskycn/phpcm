@@ -29,8 +29,16 @@ class SimpleTest extends PHPUnit_Framework_TestCase
 
     public function testSetInvalidKeys()
     {
-	$this->assertEquals($this->cm->set("key\000r", "value"), "Non-string key!");
-	$this->assertEquals($this->cm->set("keyr", "value", "dkey\000rd"), "Non-string dependency key!");
+	try {
+	    $this->assertNull($this->cm->set("key\000r", "value"));
+	} catch (Exception $e) {
+	    $this->assertEquals($e->getMessage(), "Non-string key!");
+	}
+	try {
+	    $this->assertNull($this->cm->set("keyr", "value", "dkey\000rd"));
+	} catch (Exception $e) {
+	    $this->assertEquals($e->getMessage(), "Non-string dependency key!");
+	}
     }
 
     public function testGet()

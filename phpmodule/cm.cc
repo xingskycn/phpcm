@@ -59,16 +59,16 @@ ServerPair makeSPfromPhpArray(zval **data)
 	        server.serverName = Z_STRVAL_PP(entry);
 	        server.stable = true;
 	    } else {
-	        std::cout << "host must be string!" << std::endl;
-	        std::terminate();
+		zend_error(E_ERROR, "'host' must be String");
+		return server;
 	    }
 	} else if (zend_hash_find(z_conf_row, "newhost", sizeof("newhost"), (void **) &entry) == SUCCESS) {
 	    if ((Z_TYPE_PP(entry) == IS_STRING)) {
 	        server.serverName = Z_STRVAL_PP(entry);
 	        server.stable = false;
 	    } else {
-	        std::cout << "newhost must be string!" << std::endl;
-	        std::terminate();
+		zend_error(E_ERROR, "'newhost' must be String");
+		return server;
 	    }
 	} else {
 	    server.port = -1;
@@ -79,15 +79,15 @@ ServerPair makeSPfromPhpArray(zval **data)
 	    if (Z_TYPE_PP(entry) == IS_LONG) {
 	        server.port = Z_LVAL_PP(entry);
 	    } else {
-	        std::cout << "ERROR: Configuration ROW entry 'port' must be Int" << std::endl;
-	        std::terminate();
+		zend_error(E_ERROR, "'port' must be Int");
+		return server;
 	    }
 	} else {
 	    server.port = 11211;
 	}
     } else {
-        std::cout << "ERROR: configuration ROW is not Array" << std::endl;
-        std::terminate();
+	zend_error(E_ERROR, "configuration Row is not Array");
+	return server;
     }
     return server;
 }
@@ -104,9 +104,8 @@ PHP_METHOD(cm, __construct)
     }
 
     if (Z_TYPE_P(zval_conf) != IS_ARRAY) {
-	std::cout << "ERROR: configuration is not array" << std::endl;
-	std::terminate();
-	//error
+	zend_error(E_ERROR, "configuration is not Array");
+	RETURN_NULL();
     }
 
     HashTable *z_conf;
@@ -123,8 +122,8 @@ PHP_METHOD(cm, __construct)
 	    configuration.push_back(server);
 	} else if (server.port == -1) { //not 'host' or 'newhost' entry, try replica array
 	    if (Z_TYPE_PP(data) != IS_ARRAY) {
-		std::cout << "ERROR: configuration ROW is not Array" << std::endl;
-		std::terminate();
+		zend_error(E_ERROR, "configuration ROW is not Array");
+		RETURN_NULL();
 	    }
 	    HashTable *z_conf_row;
 	    z_conf_row = Z_ARRVAL_PP(data);
@@ -135,8 +134,8 @@ PHP_METHOD(cm, __construct)
 	        zend_hash_get_current_data_ex(z_conf_row, (void**) &replicadata, &rpointer) == SUCCESS;
 	        zend_hash_move_forward_ex(z_conf_row, &rpointer)) {
 		if (Z_TYPE_PP(replicadata) != IS_ARRAY) {
-		    std::cout << "ERROR: configuration ROW is not Array and is NOT Array of Replica configuration ROW" << std::endl;
-		    std::terminate();
+		    zend_error(E_ERROR, "configuration ROW is not Array and is NOT Array of Replica configuration ROW");
+		    RETURN_NULL();
 		}
 		ServerPair server = makeSPfromPhpArray(replicadata);
 		replicas.push_back(server);
@@ -149,7 +148,8 @@ PHP_METHOD(cm, __construct)
 		replica.replica = replicas;
 		configuration.push_back(replica);
 	    } else {
-		std::cout << "ERROR: configuration ROW is empty Array" << std::endl;
+		zend_error(E_ERROR, "configuration ROW is empty Array");
+		RETURN_NULL();
 	    }
 	}
     }
@@ -173,7 +173,9 @@ PHP_METHOD(cm, remove)
             RETURN_NULL();
         }
         if (strnlen(key, key_len+1) != key_len) {
-            RETURN_STRING("Non-string key!", 1);
+            //check quiet mode
+            zend_error(E_WARNING, "Non-string key!");
+            RETURN_NULL();
         }
 
         RETURN_BOOL(cm->remove(key));
@@ -196,7 +198,9 @@ PHP_METHOD(cm, get)
             RETURN_NULL();
         }
         if (strnlen(key, key_len+1) != key_len) {
-            RETURN_STRING("Non-string key!", 1);
+            //check quiet mode
+            zend_error(E_WARNING, "Non-string key!");
+            RETURN_NULL();
         }
 
         size_t value_length=0;
@@ -230,14 +234,18 @@ PHP_METHOD(cm, set)
             RETURN_NULL();
         }
         if (strnlen(key, key_len+1) != key_len) {
-            RETURN_STRING("Non-string key!", 1);
+            //check quiet mode
+            zend_error(E_WARNING, "Non-string key!");
+            RETURN_NULL();
         }
         if (dependency_len == 0) {
             dependency = new char [1];
             strcpy(dependency, "");
         }
         if (strnlen(dependency, dependency_len+1) != dependency_len) {
-            RETURN_STRING("Non-string dependency key!", 1);
+            //check quiet mode
+            zend_error(E_WARNING, "Non-string dependency key!");
+            RETURN_NULL();
         }
 
         RETURN_BOOL(cm->set(key, value, value_len, dependency, expire));
