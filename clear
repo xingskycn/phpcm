@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 make clean
-rm -rf CMakeFiles/ CMakeCache.txt cmake_install.cmake
+rm -rf CMakeFiles/ CMakeCache.txt cmake_install.cmake install_manifest.txt
 rm Makefile
 cd debug; ./clear; cd ..;
 cd phpmodule; ./clear; cd ..;
