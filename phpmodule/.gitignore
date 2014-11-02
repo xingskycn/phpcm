@@ -28,3 +28,5 @@ install-sh
 .deps
 .libs/
 core
+install_manifest.txt
+*.so
