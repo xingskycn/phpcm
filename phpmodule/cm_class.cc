@@ -83,20 +83,20 @@ Cm::~Cm() {
 bool Cm::set(char *key, char *value, int value_len, char *dependency, long expire)
 {
     bool summary=true;
-    int j = backends[key[0]].size();
+    int j = backends[key[strlen(key)-1]].size();
     for (int i=0; i<j; i++) {
         int newValue_len=0;
         char* newValue = this->processSetDependency(value, value_len, dependency, &newValue_len);
-        summary = summary && backends[key[0]][i]->set(key, newValue, newValue_len, expire);
+        summary = summary && backends[key[strlen(key)-1]][i]->set(key, newValue, newValue_len, expire);
     }
     return summary;
 }
 
 char* Cm::get(char *key, size_t *return_value_length)
 {
-    int j = backends[key[0]].size();
+    int j = backends[key[strlen(key)-1]].size();
     for (int i=0; i<j; i++) {
-        char* result = backends[key[0]][i]->get(key, return_value_length);
+        char* result = backends[key[strlen(key)-1]][i]->get(key, return_value_length);
         if (result != NULL) {
             int newValue_len;
             char *newValue = this->processGetDependency(result, *return_value_length, &newValue_len);
@@ -116,9 +116,9 @@ char* Cm::get(char *key, size_t *return_value_length)
 bool Cm::remove(char *key)
 {
     bool summary=true;
-    int j = backends[key[0]].size();
+    int j = backends[key[strlen(key)-1]].size();
     for (int i=0; i<j; i++) {
-        summary = summary && backends[key[0]][i]->remove(key);
+        summary = summary && backends[key[strlen(key)-1]][i]->remove(key);
     }
     return summary;
 }
