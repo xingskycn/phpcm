@@ -8,7 +8,7 @@ PHP Cache Mangaer - это менеджер кеша, созданный для 
 
 Реализованные возможности:
 
-1. Стандартные возможности memcached клиента (get/set/delete/add).
+1. Стандартные возможности memcached клиента (get/set/delete/add/mget).
 2. Dependency Cache - система зависимостей для сброса кеша.
 3. Cache Replication - репликация кеша, для его отказоустойчивости
 
