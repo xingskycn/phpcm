@@ -289,6 +289,13 @@ PHP_MINIT_FUNCTION(cm)
     return SUCCESS;
 }
 
+PHP_MSHUTDOWN_FUNCTION(cm)
+{
+//	UNREGISTER_INI_ENTRIES();
+	return SUCCESS;
+}
+
+
 zend_module_entry cm_module_entry = {
 #if ZEND_MODULE_API_NO >= 20010901
     STANDARD_MODULE_HEADER,
@@ -296,7 +303,7 @@ zend_module_entry cm_module_entry = {
     PHP_CM_EXTNAME,
     NULL,        /* Functions */
     PHP_MINIT(cm),        /* MINIT */
-    NULL,        /* MSHUTDOWN */
+    PHP_MSHUTDOWN(cm),        /* MSHUTDOWN */
     NULL,        /* RINIT */
     NULL,        /* RSHUTDOWN */
     NULL,        /* MINFO */

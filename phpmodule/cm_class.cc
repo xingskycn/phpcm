@@ -44,6 +44,7 @@ Cm::Cm(std::vector<ServerPair> config) {
 	    std::vector<CmAdapter*> repl;
 	    if (realBackendsReplicas.find(hp) == realBackendsReplicas.end()) {
 		repl = newServerPairReplica(config[j].replica);
+		realBackendsReplicas[hp] = repl;
 	    } else {
 		repl = realBackendsReplicas[hp];
 	    }

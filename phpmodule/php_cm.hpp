@@ -2,7 +2,7 @@
 #define PHP_CM_H
 
 #define PHP_CM_EXTNAME  "CM"
-#define PHP_CM_EXTVER   "0.1"
+#define PHP_CM_EXTVER   "0.2"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

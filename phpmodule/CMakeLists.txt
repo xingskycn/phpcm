@@ -11,7 +11,7 @@ include_directories(/usr/include/php5 /usr/include/php5 /usr/include/php5/main /
 
 add_library (cm SHARED cm.cc cm_class.cc cm_adapter.cc crc32.cc)
 
-add_executable(cm_test_adapter cm_adapter.cc cm_adapter_test.cc cm_class.cc crc32.cc)
+#add_executable(cm_test_adapter cm_adapter.cc cm_adapter_test.cc cm_class.cc crc32.cc)
 
 target_link_libraries(cm PUBLIC memcached)
 target_link_libraries(cm PUBLIC stdc++)
