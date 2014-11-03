@@ -7,6 +7,7 @@
 
 CmAdapter::CmAdapter(const char* serverName, int serverPort, bool stable)
 {
+    std::cout << "Construct Adapter" << std::endl;
     this->stable = stable;
     char *config_string= new char [strlen(serverName)+strlen("--SERVER=:")+1+6];
     sprintf(config_string, "--SERVER=%s:%d", serverName, serverPort);
@@ -15,6 +16,7 @@ CmAdapter::CmAdapter(const char* serverName, int serverPort, bool stable)
 
 CmAdapter::~CmAdapter()
 {
+    std::cout << "Destroy Adapter" << std::endl;
     memcached_free(memc);
 }
 

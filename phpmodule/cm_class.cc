@@ -25,7 +25,7 @@ Cm::Cm(std::vector<ServerPair> config) {
 	    ss << hp << ":" << config[j].port;
 	    ss >> hp;
 	    CmAdapter* backend;
-	    if (realBackends.find(hp) != realBackends.end()) {
+	    if (realBackends.find(hp) == realBackends.end()) {
 		backend = newServerPairAdapter(config[j]);
 		realBackends[hp] = backend;
 	    } else {
@@ -42,7 +42,7 @@ Cm::Cm(std::vector<ServerPair> config) {
 	    std::string hp;
 	    ss >> hp;
 	    std::vector<CmAdapter*> repl;
-	    if (realBackendsReplicas.find(hp) != realBackendsReplicas.end()) {
+	    if (realBackendsReplicas.find(hp) == realBackendsReplicas.end()) {
 		repl = newServerPairReplica(config[j].replica);
 	    } else {
 		repl = realBackendsReplicas[hp];

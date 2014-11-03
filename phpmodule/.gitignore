@@ -30,3 +30,4 @@ install-sh
 core
 install_manifest.txt
 *.so
+cm_test_*
