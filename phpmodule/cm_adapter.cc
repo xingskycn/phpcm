@@ -28,6 +28,17 @@ bool CmAdapter::set(char* key, char* val, int val_len, long expire)
     }
 }
 
+bool CmAdapter::add(char* key, char* val, int val_len, long expire)
+{
+    memcached_return_t rc= memcached_add(memc, key, strlen(key), val, val_len, (time_t)expire, (uint32_t)0);
+    if (rc != MEMCACHED_SUCCESS) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+
 char* CmAdapter::get(char *key, size_t *return_value_length)
 {
     uint32_t flags=0;

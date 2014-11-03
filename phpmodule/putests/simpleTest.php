@@ -56,4 +56,13 @@ class SimpleTest extends PHPUnit_Framework_TestCase
 	$this->assertNull($this->cm->get("key"));
     }
 
+    public function testAdd()
+    {
+	$this->cm->remove("key");
+	$this->assertTrue($this->cm->add("key", "valueAdd"), "added");
+	$this->assertEquals($this->cm->get("key"), "valueAdd", "first equals");
+	$this->assertFalse($this->cm->add("key", "value"), "not added");
+	$this->assertEquals($this->cm->get("key"), "valueAdd", "second equals");
+    }
+
 }

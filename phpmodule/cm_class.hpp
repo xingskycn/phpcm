@@ -19,6 +19,8 @@ class Cm {
         char* get(char *key, size_t *return_value_length);
         //remove Key (only this key, no children)
         bool remove(char *key);
+        //add Value to Key if key not exists
+        bool add(char *key, char *value, int value_len, char *dependency, long expire);
     private:
         std::map<unsigned char, std::vector<CmAdapter*> > backends;
         std::map<std::string, CmAdapter*> realBackends;

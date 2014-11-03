@@ -92,6 +92,18 @@ bool Cm::set(char *key, char *value, int value_len, char *dependency, long expir
     return summary;
 }
 
+bool Cm::add(char *key, char *value, int value_len, char *dependency, long expire)
+{
+    bool summary=true;
+    int j = backends[key[0]].size();
+    for (int i=0; i<j; i++) {
+        int newValue_len=0;
+        char* newValue = this->processSetDependency(value, value_len, dependency, &newValue_len);
+        summary = summary && backends[key[0]][i]->add(key, newValue, newValue_len, expire);
+    }
+    return summary;
+}
+
 char* Cm::get(char *key, size_t *return_value_length)
 {
     int j = backends[key[0]].size();

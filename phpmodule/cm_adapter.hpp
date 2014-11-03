@@ -10,6 +10,7 @@ class CmAdapter {
         bool set(char* key, char* val, int val_len, long expire);
         char* get(char *key, size_t *return_value_length);
         bool remove(char* key);
+        bool add(char* key, char* val, int val_len, long expire);
         bool isStable();
     private:
         memcached_st *memc;
