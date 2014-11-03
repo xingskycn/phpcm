@@ -11,7 +11,7 @@
 
 class CmAdapter {
     public:
-        CmAdapter(const char* serverName, int serverPort, bool stable);
+        CmAdapter(const char* serverName, int serverPort, bool stable, bool debug);
         ~CmAdapter();
         bool set(char* key, char* val, int val_len, long expire);
         char* get(char *key, size_t *return_value_length);
@@ -21,6 +21,7 @@ class CmAdapter {
     private:
         memcached_st *memc;
         bool stable;
+        bool debug;
 };
 
 #endif

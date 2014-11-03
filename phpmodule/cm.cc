@@ -99,8 +99,9 @@ PHP_METHOD(cm, __construct)
     zval *object = getThis();
     std::vector<ServerPair> configuration;
     zval* zval_conf;
+    bool debug;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &zval_conf) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|b", &zval_conf, &debug) == FAILURE) {
         RETURN_NULL();
     }
 
@@ -170,7 +171,7 @@ PHP_METHOD(cm, __construct)
 	zend_error(E_RECOVERABLE_ERROR, "configuration too big");
 	RETURN_NULL();
     }
-    cm = new Cm(configuration);
+    cm = new Cm(configuration, debug);
     cm_object *obj = (cm_object *)zend_object_store_get_object(object TSRMLS_CC);
     obj->cm = cm;
 }

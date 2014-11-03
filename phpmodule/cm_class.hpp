@@ -12,7 +12,7 @@
 // A very simple car class
 class Cm {
     public:
-        Cm(std::vector<ServerPair> config);
+        Cm(std::vector<ServerPair> config, bool debug);
         ~Cm();
         //set Value to Key with isDependency feature, with Dependency parent, with Expire time
         bool set(char *key, char *value, int value_len, char *dependency, long expire);

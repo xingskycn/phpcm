@@ -9,7 +9,7 @@ class BadConfigTest extends PHPUnit_Framework_TestCase
 	    $cm = new Cm();
 	    $this->assertTrue(false);
 	} catch (Exception $e) {
-	    $this->assertEquals($e->getMessage(), "Cm::__construct() expects exactly 1 parameter, 0 given");
+	    $this->assertEquals($e->getMessage(), "Cm::__construct() expects at least 1 parameter, 0 given");
 	}
     }
 

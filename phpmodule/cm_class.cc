@@ -9,14 +9,14 @@
 #include "cm_dependency.hpp"
 
 //объявлено ниже
-CmAdapter* newServerPairAdapter(ServerPair config);
-std::vector<CmAdapter*> newServerPairReplica(std::vector<ServerPair>);
+CmAdapter* newServerPairAdapter(ServerPair config, bool debug);
+std::vector<CmAdapter*> newServerPairReplica(std::vector<ServerPair>, bool debug);
 
 /*
 * Object manage
 */
 
-Cm::Cm(std::vector<ServerPair> config) {
+Cm::Cm(std::vector<ServerPair> config, bool debug) {
     unsigned int j=0;
     for (unsigned int i=0; i<=255; i++) {
 	if (!config[j].isReplica) { //single node
@@ -26,7 +26,7 @@ Cm::Cm(std::vector<ServerPair> config) {
 	    ss >> hp;
 	    CmAdapter* backend;
 	    if (realBackends.find(hp) == realBackends.end()) {
-		backend = newServerPairAdapter(config[j]);
+		backend = newServerPairAdapter(config[j], debug);
 		realBackends[hp] = backend;
 	    } else {
 	        backend = realBackends[hp];
@@ -43,7 +43,7 @@ Cm::Cm(std::vector<ServerPair> config) {
 	    ss >> hp;
 	    std::vector<CmAdapter*> repl;
 	    if (realBackendsReplicas.find(hp) == realBackendsReplicas.end()) {
-		repl = newServerPairReplica(config[j].replica);
+		repl = newServerPairReplica(config[j].replica, debug);
 		realBackendsReplicas[hp] = repl;
 	    } else {
 		repl = realBackendsReplicas[hp];
@@ -214,17 +214,17 @@ char* Cm::processGetDependency(char *value, int value_len, int *newValue_len)
     }
 }
 
-CmAdapter* newServerPairAdapter(ServerPair config)
+CmAdapter* newServerPairAdapter(ServerPair config, bool debug)
 {
-    CmAdapter* backend = new CmAdapter(config.serverName, config.port, config.stable);
+    CmAdapter* backend = new CmAdapter(config.serverName, config.port, config.stable, debug);
     return backend;
 }
 
-std::vector<CmAdapter*> newServerPairReplica(std::vector<ServerPair> list)
+std::vector<CmAdapter*> newServerPairReplica(std::vector<ServerPair> list, bool debug)
 {
     std::vector<CmAdapter*> replica;
     for (unsigned int i=0; i<list.size(); i++) {
-	replica.push_back(newServerPairAdapter(list[i]));
+	replica.push_back(newServerPairAdapter(list[i], debug));
     }
     return replica;
 }
