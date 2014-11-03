@@ -67,6 +67,39 @@ class BackendsTest extends PHPUnit_Framework_TestCase
 	$this->assertNull($scmB->get("ab"), "st-8");
     }
 
+    public function testShardingByLatestByteAdd()
+    {
+	$shardA = [ 'host' => '127.0.0.1', 'port'=>11211 ];
+	$shardB = [ 'host' => '127.0.0.1', 'port'=>11212 ];
+	$scm = new Cm([
+	    $shardA,
+	    $shardB,
+	]);
+	$scmA = new Cm([$shardA]);
+	$scmB = new Cm([$shardB]);
+
+	//cleanup
+	$scm->remove("aa");
+	$scm->remove("ab");
+	$scmA->remove("aa");
+	$scmA->remove("ab");
+	$scmB->remove("aa");
+	$scmB->remove("ab");
+
+
+	$this->assertTrue($scm->add("aa", "valueA"), "st-1");
+	$this->assertTrue($scm->add("ab", "valueB"), "st-2");
+	$this->assertEquals($scm->get("aa"), "valueA", "st-3");
+	$this->assertEquals($scm->get("ab"), "valueB", "st-4");
+
+	$this->assertEquals($scmA->get("ab"), "valueB", "st-5");
+	$this->assertNull($scmA->get("aa"), "st-6");
+
+	$this->assertEquals($scmB->get("aa"), "valueA", "st-7");
+	$this->assertNull($scmB->get("ab"), "st-8");
+    }
+
+
     public function testReplication()
     {
 	$replica0 = [ 'host' => '127.0.0.1', 'port'=>11211 ];
