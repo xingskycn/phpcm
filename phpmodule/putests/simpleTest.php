@@ -65,4 +65,17 @@ class SimpleTest extends PHPUnit_Framework_TestCase
 	$this->assertEquals($this->cm->get("key"), "valueAdd", "second equals");
     }
 
+    public function testMget()
+    {
+	$this->cm->remove("mkeyA");
+	$this->cm->remove("mkeyB");
+	$this->assertTrue($this->cm->set("mkeyA", "mvalA"), "setA");
+	$this->assertTrue($this->cm->set("mkeyB", "mvalB"), "setB");
+	$keys = $this->cm->mget(array("mkeyA", "mkeyB"));
+	$this->assertFalse(empty($keys["mkeyA"]));
+	$this->assertFalse(empty($keys["mkeyB"]));
+	$this->assertEquals($keys["mkeyA"], "mvalA");
+	$this->assertEquals($keys["mkeyB"], "mvalB");
+    }
+
 }

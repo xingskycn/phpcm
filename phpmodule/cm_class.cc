@@ -104,6 +104,21 @@ bool Cm::add(char *key, char *value, int value_len, char *dependency, long expir
     return summary;
 }
 
+std::map<std::string, RVal> Cm::mget(std::vector<std::string> keys)
+{
+    std::map<std::string, RVal> ret;
+    for (unsigned int i=0; i<keys.size(); i++) {
+        size_t value_length;
+        char *value = get((char *)keys[i].c_str(), &value_length);
+        if (value != NULL) {
+            RVal rval = { .value = value, .length = value_length };
+            ret[keys[i]] = rval;
+        }
+    }
+    return ret;
+}
+
+
 char* Cm::get(char *key, size_t *return_value_length)
 {
     int j = backends[key[strlen(key)-1]].size();

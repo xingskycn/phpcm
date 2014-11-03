@@ -1,7 +1,13 @@
 #ifndef CM_CMADAPTER_H
 #define CM_CMADAPTER_H
 
+#include <map>
+#include <vector>
+#include <string>
+
 #include <libmemcached/memcached.h>
+
+#include "cm_RVal.hpp"
 
 class CmAdapter {
     public:

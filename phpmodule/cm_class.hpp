@@ -7,6 +7,7 @@
 
 #include "cm_adapter.hpp"
 #include "cm_ServerPair.hpp"
+#include "cm_RVal.hpp"
 
 // A very simple car class
 class Cm {
@@ -17,6 +18,8 @@ class Cm {
         bool set(char *key, char *value, int value_len, char *dependency, long expire);
         //get Key
         char* get(char *key, size_t *return_value_length);
+        //get Keys list
+        std::map<std::string, RVal> mget(std::vector<std::string> keys);
         //remove Key (only this key, no children)
         bool remove(char *key);
         //add Value to Key if key not exists

@@ -4,6 +4,7 @@
 #include <libmemcached/memcached.h>
 
 #include "cm_adapter.hpp"
+#include "cm_RVal.hpp"
 
 CmAdapter::CmAdapter(const char* serverName, int serverPort, bool stable)
 {

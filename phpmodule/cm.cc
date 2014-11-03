@@ -3,6 +3,7 @@
 #include "php_cm.hpp"
 #include "cm_class.hpp"
 #include "cm_ServerPair.hpp"
+#include "cm_RVal.hpp"
 
 zend_class_entry *cm_ce;
 
@@ -230,6 +231,34 @@ PHP_METHOD(cm, get)
     }
 }
 
+//std::map<std::string, RVal> mget(std::vector<std::string> keys)
+PHP_METHOD(cm, mget)
+{
+    Cm *cm;
+    cm_object *obj = (cm_object *)zend_object_store_get_object(
+        getThis() TSRMLS_CC);
+    cm = obj->cm;
+    if (cm != NULL) {
+        std::vector<std::string> keys;
+        zval* zval_keys;
+
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &zval_keys) == FAILURE) {
+            RETURN_NULL();
+        }
+
+        keys.push_back("mkeyA");
+        keys.push_back("mkeyB");
+        std::map<std::string, RVal> ret = cm->mget(keys);
+        array_init(return_value);
+        for (std::map<std::string, RVal>::iterator it = ret.begin(); it != ret.end(); ++it) {
+            add_assoc_stringl(return_value, it->first.c_str(), it->second.value, it->second.length, 1);
+        }
+    } else {
+        RETURN_NULL();
+    }
+}
+
+
 //bool set(char *key, char *value, bool isDependency, char *dependency, long expire)
 PHP_METHOD(cm, set)
 {
@@ -313,6 +342,7 @@ zend_function_entry cm_methods[] = {
     PHP_ME(cm,  set,             NULL, ZEND_ACC_PUBLIC)
     PHP_ME(cm,  add,             NULL, ZEND_ACC_PUBLIC)
     PHP_ME(cm,  get,             NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(cm,  mget,            NULL, ZEND_ACC_PUBLIC)
     PHP_ME(cm,  remove,          NULL, ZEND_ACC_PUBLIC)
     {NULL, NULL, NULL}
 };
