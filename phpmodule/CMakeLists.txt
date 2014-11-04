@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 2.8.9)
 project (cm)
 
 #execute_process(COMMAND /bin/bash -c "/usr/bin/php-config --includes | sed -e 's/-I//g'" OUTPUT_VARIABLE PHP_INCLUDES)
