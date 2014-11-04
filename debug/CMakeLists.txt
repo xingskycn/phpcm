@@ -8,8 +8,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX__FLAGS} -std=c++11 -O3")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -O3")
 set(CMAKE_EXE_LINKER_FLAGS, "${CMAKE_EXE_LINKER_FLAGS} -pthread ")
 
-#set(RELEASE ON CACHE BOOL "Rel")
-set(RELEASE OFF CACHE BOOL "Rel")
+set(RELEASE ON CACHE BOOL "Rel")
+#set(RELEASE OFF CACHE BOOL "Rel")
 
 if (RELEASE)
     set(CMAKE_BUILD_TYPE, "Release")
@@ -23,6 +23,6 @@ endif (RELEASE)
 
 configure_file(config.h.in config.h)
 
-add_library (debuga ${DEBUG_CPP})
-add_library (debugso SHARED ${DEBUG_CPP})
+add_library (debuga debug.cpp ${DEBUG_CPP})
+add_library (debugso SHARED debug.cpp ${DEBUG_CPP})
 install (TARGETS debugso DESTINATION /usr/lib/)

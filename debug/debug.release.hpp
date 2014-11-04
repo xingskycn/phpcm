@@ -4,9 +4,8 @@
 extern "C" {
 #endif
     void debug_call_log(std::string mode, unsigned short breakMode, const char* x, const char* y);
-    void setLogConsole();
-    void setLogFile();
-    void unsetLogs();
+    void stopLogging();
+    void startLogging();
 #ifdef __cplusplus
 }
 #endif

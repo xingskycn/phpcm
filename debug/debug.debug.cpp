@@ -4,15 +4,13 @@
 #include <unistd.h>
 #include <chrono>
 #include <map>
-
 #include <ios>
 #include <fstream>
 
+#include <syslog.h>
+
 #include "debug.hpp"
 
-void (*debug_write_log)(std::string, unsigned short, const char*, const char*);
-FILE *LogFile;
-unsigned short inFile;
 
 static std::map<pthread_t,long>prevCounts;
 
@@ -64,55 +62,12 @@ void debug_write_log_std(std::string mode, unsigned short breakMode, const char*
     double vm;
     double rss;
     memory_usage(&vm, &rss);
-    if ((breakMode == 0)&& (mode.compare(__WARNING_TEXT) != 0 )) {
-	printf("(%d:%ld)	[%s]	%ld / %ld	rss=%f,	vm=%f	%s\n", getpid(), pthread_self(), mode.c_str(), ms.count(), ms.count()-prevCount, rss, vm, outbuffer);
+    if ((breakMode == 0) && (mode.compare(__WARNING_TEXT) != 0 )) {
+	syslog(6, "(%d:%ld) [%s] %ld / %ld rss=%f, vm=%f %s\n", getpid(), pthread_self(), mode.c_str(), ms.count(), ms.count()-prevCount, rss, vm, outbuffer);
     } else {
-	fprintf(stderr, "(%d:%ld)	[%s]	%ld / %ld	rss=%f,	vm=%f	%s\n", getpid(), pthread_self(), mode.c_str(), ms.count(), ms.count()-prevCount, rss, vm, outbuffer);
+	syslog(6, "(%d:%ld) [%s] %ld / %ld rss=%f, vm=%f %s\n", getpid(), pthread_self(), mode.c_str(), ms.count(), ms.count()-prevCount, rss, vm, outbuffer);
     }
     prevCounts[pthread_self()] = ms.count();
 
     delete outbuffer;
-}
-
-void debug_write_log_file(std::string mode, unsigned short breakMode, const char* x, const char* y)
-{
-    char *outbuffer = new char [strlen(x) + strlen(y) + 1];
-    sprintf(outbuffer, x, y);
-
-    if (breakMode == 0) {
-	fprintf(LogFile, "(%d:%ld)	[%s]	%s\n", getpid(), pthread_self(), mode.c_str(), outbuffer);
-    } else {
-	fprintf(LogFile, "(%d:%ld)	[%s]	%s\n", getpid(), pthread_self(), mode.c_str(), outbuffer);
-    }
-    delete outbuffer;
-}
-
-void setLogConsole()
-{
-    debug_write_log = &debug_write_log_std;
-    inFile = 0;
-}
-
-void setLogFile(std::string lLogFile)
-{
-    LogFile = fopen(lLogFile.c_str(), "a+");
-    debug_write_log = &debug_write_log_file;
-    inFile = 1;
-}
-
-void unsetLogs()
-{
-    if (inFile == 1) {
-	fclose(LogFile);
-    }
-}
-
-void debug_call_log(std::string mode, unsigned short breakMode, const char* x, const char* y)
-{
-    (*debug_write_log)(mode, breakMode, x, y);
-    if (breakMode == DEBUG_EXIT) {
-	std::terminate();
-    } else if (breakMode == DEBUG_EXCEPTION) {
-	throw DEBUG_EXCEPTION;
-    }
 }

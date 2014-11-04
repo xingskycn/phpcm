@@ -351,7 +351,7 @@ zend_function_entry cm_methods[] = {
 
 PHP_MINIT_FUNCTION(cm)
 {
-    setLogConsole();
+    startLogging();
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Cm", cm_methods);
     cm_ce = zend_register_internal_class(&ce TSRMLS_CC);
@@ -364,8 +364,8 @@ PHP_MINIT_FUNCTION(cm)
 
 PHP_MSHUTDOWN_FUNCTION(cm)
 {
-//	UNREGISTER_INI_ENTRIES();
-	return SUCCESS;
+    stopLogging();
+    return SUCCESS;
 }
 
 
