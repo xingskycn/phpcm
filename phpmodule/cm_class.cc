@@ -7,6 +7,7 @@
 #include "cm_class.hpp"
 #include "crc32.h"
 #include "cm_dependency.hpp"
+#include "cm_debug.hpp"
 
 //объявлено ниже
 CmAdapter* newServerPairAdapter(ServerPair config, bool debug);
@@ -17,6 +18,7 @@ std::vector<CmAdapter*> newServerPairReplica(std::vector<ServerPair>, bool debug
 */
 
 Cm::Cm(std::vector<ServerPair> config, bool debug) {
+    this->debug = debug;
     unsigned int j=0;
     for (unsigned int i=0; i<=255; i++) {
 	if (!config[j].isReplica) { //single node
@@ -157,9 +159,15 @@ bool Cm::remove(char *key)
 char* Cm::processSetDependency(char *value, int value_len, char *dependency, int *newValue_len)
 {
     if (strlen(dependency) == 0) {
+        IFDEBUG_A
+            INFO("PHPCM: processing setDependency: key=%s", "no dependency key, skip");
+        IFDEBUG_E
         (*newValue_len) = value_len;
         return value;
     }
+    IFDEBUG_A
+        INFO("PHPCM: processing setDependency: key=%s", dependency);
+    IFDEBUG_E
     uint_least32_t crc32=0;
     size_t depLen = 0;
     char *depValue = this->get(dependency, &depLen);
@@ -183,6 +191,10 @@ char* Cm::processSetDependency(char *value, int value_len, char *dependency, int
 char* Cm::processGetDependency(char *value, int value_len, int *newValue_len)
 {
     if (validateCmDependencyInRaw(value, value_len)) {
+        IFDEBUG_A
+            INFO("PHPCM: processing getDependency: DEP-header=%s", "valid, processing");
+        IFDEBUG_E
+
         size_t depStructLen;
         CmDependency *depStruct = makeCmDependencyFromRaw(value, &depStructLen);
         
@@ -209,6 +221,9 @@ char* Cm::processGetDependency(char *value, int value_len, int *newValue_len)
             return newValue;
         }
     } else {
+        IFDEBUG_A
+            INFO("PHPCM: processing getDependency: DEP-header=%s", "INvalid, returning raw");
+        IFDEBUG_E
         *newValue_len = value_len;
         return value;
     }

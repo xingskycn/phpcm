@@ -30,6 +30,7 @@ class Cm {
         std::map<std::string, std::vector<CmAdapter*> > realBackendsReplicas;
         char* processSetDependency(char *value, int value_len, char *dependency, int *newValue_len);
         char* processGetDependency(char *value, int value_len, int *newValue_len);
+        bool debug;
 };
 
 #endif /* CM_CM_H */
