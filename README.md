@@ -11,6 +11,7 @@ PHP Cache Mangaer - это менеджер кеша, созданный для 
 1. Стандартные возможности memcached клиента (get/set/delete/add/mget).
 2. Dependency Cache - система зависимостей для сброса кеша.
 3. Cache Replication - репликация кеша, для его отказоустойчивости
+4. Cache Debug - инструмент для удобного Debug-а кеша.
 
 ## Dependency Cache
 
@@ -82,8 +83,44 @@ Cache Replication - реализация отказоустойчивого ке
 
 Просытм конструированием объекта можно легко сделать отказоустойчивый кеш.
 
+## Cache Debug
+
+Cache Debug - возможность записывать подробную информацию в syslog о том, что происходит с кешем. Для того, чтобы Cache Debug заработал
+нужно собрать PHP Cache Manager со специальной опцией (см. wiki) и включить Debug при конструировании объекта Cm():
+
+    $enableCacheBool = true;
+    $cm = new Cm($configuration, $enableCacheBool);
+
+Когда Debug включен в syslog начнут поступать сообщения следующего вида:
+
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: Debug output started
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: delete: key=mkeyA
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: delete: result=success
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: delete: key=mkeyB
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: delete: result=success
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: set: key=mkeyA
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: set: result=success
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: set: key=mkeyB
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: set: result=success
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: get: key=mkeyA
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: get: result=success/isset
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: get: key=mkeyB
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: get: result=success/isset
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: connection: closing
+    Nov  4 11:09:09 lynx php: (21594:140467582330688) [ info  ] PHPCM: connection: closed
+
+Формат лога зависит от конкретной настройки syslog, но все, начиная сразу после "php:" зависит от PHP CM и описано ниже:
+
+* (21594:140467582330688) - Pid процесса и pthread_self номер потока
+* [ info ] - тип записи в лог. Может быть info, warning или error.
+* PHPCM: - имя модуля который пишет лог, константа "PHPCM:"
+* set: - действие, которое делаем модуль.
+* key=mkeyA - описание, что происходит внутри действия.
+
+Мы рекомендуем включать Cache Debug на dev-/test- окружениях и не рекомендуем включать его на Production средах, т.к. логирование в syslog
+заметдляет работу приложения. Логирование идет в LOG_LEVEL6 с priority INFO.
+
 # Next Features
 
 1. ReShard - возможность "мягкого" добавления новыйх нод memcached, без потери 1/n данных кеша.
 2. Dependency Purge - возможность сброса кеша по сложной схеме зависимостей
-3. Cache Debug - инструмент для удобного Debug-а кеша.
