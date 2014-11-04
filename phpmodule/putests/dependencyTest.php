@@ -9,6 +9,20 @@ class DependencyTest extends PHPUnit_Framework_TestCase
 	$this->cm = new Cm([ ['host' => '127.0.0.1', 'port'=>11211] ]);
     }
 
+    public function testMgetDependency()
+    {
+	$this->cm->remove("dep");
+	$this->cm->remove("first");
+	$this->cm->remove("second");
+	$this->assertTrue($this->cm->set("dep", "dval"), "set dep");
+	$this->assertTrue($this->cm->set("first", "fval", "dep"), "set first");
+	$this->assertTrue($this->cm->set("second", "sval"), "set second");
+	$this->assertTrue($this->cm->set("dep", "dval2"));
+	$list = $this->cm->mget(array("first", "second"));
+	$this->assertTrue(empty($list["first"]), "first expired");
+	$this->assertFalse(empty($list["second"]), "second exists");
+    }
+
     public function testCheckDependency()
     {
 	$this->assertTrue($this->cm->set("one", "dataValid"));

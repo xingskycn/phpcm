@@ -107,8 +107,8 @@ PHP_METHOD(cm, __construct)
     }
 
     if (Z_TYPE_P(zval_conf) != IS_ARRAY) {
-	zend_error(E_RECOVERABLE_ERROR, "configuration is not Array");
-	RETURN_NULL();
+        zend_error(E_RECOVERABLE_ERROR, "configuration is not Array");
+        RETURN_NULL();
     }
 
     HashTable *z_conf;
@@ -248,8 +248,21 @@ PHP_METHOD(cm, mget)
             RETURN_NULL();
         }
 
-        keys.push_back("mkeyA");
-        keys.push_back("mkeyB");
+        if (Z_TYPE_P(zval_keys) != IS_ARRAY) {
+            zend_error(E_RECOVERABLE_ERROR, "keys is not Array");
+            RETURN_NULL();
+        }
+
+        HashTable *zval_hkeys;
+        zval_hkeys = Z_ARRVAL_P(zval_keys);
+
+        HashPosition pointer;
+        zval **data;
+        for(zend_hash_internal_pointer_reset_ex(zval_hkeys, &pointer);
+            zend_hash_get_current_data_ex(zval_hkeys, (void**) &data, &pointer) == SUCCESS;
+            zend_hash_move_forward_ex(zval_hkeys, &pointer)) {
+            keys.push_back(Z_STRVAL_PP(data));
+        }
         std::map<std::string, RVal> ret = cm->mget(keys);
         array_init(return_value);
         for (std::map<std::string, RVal>::iterator it = ret.begin(); it != ret.end(); ++it) {
