@@ -21,7 +21,6 @@ extern "C" {
 //stop working thread or event
 #define ERROR(x, y) debug_call_log(" error ", DEBUG_EXCEPTION, x, y); std::terminate()
 
-
 #define __WARNING_TEXT "warning"
 //non stop working trouble event
 #define WARNING(x, y) debug_call_log(__WARNING_TEXT, DEBUG_PASS, x, y)

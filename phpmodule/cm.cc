@@ -4,6 +4,7 @@
 #include "cm_class.hpp"
 #include "cm_ServerPair.hpp"
 #include "cm_RVal.hpp"
+#include "cm_debug.hpp"
 
 zend_class_entry *cm_ce;
 
@@ -350,6 +351,7 @@ zend_function_entry cm_methods[] = {
 
 PHP_MINIT_FUNCTION(cm)
 {
+    setLogConsole();
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Cm", cm_methods);
     cm_ce = zend_register_internal_class(&ce TSRMLS_CC);

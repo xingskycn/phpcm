@@ -1,6 +1,6 @@
 #include "config.h"
 
-#define INFO(x, y) false
+#include "debug.release.hpp"
 
 #ifndef _FUNC_DEBUG_
 
