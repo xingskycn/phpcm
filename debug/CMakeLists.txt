@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 2.8.9)
 project (debug)
 
 #set(CMAKE_COMPILER_IS_GNUCXX true)

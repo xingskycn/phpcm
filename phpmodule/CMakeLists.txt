@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 2.8.9)
 project (cm)
 
 execute_process(COMMAND /bin/bash -c "/usr/bin/php-config --extension-dir | awk 1 ORS=''" OUTPUT_VARIABLE PHP_OUT)
@@ -23,8 +23,8 @@ include_directories(/usr/include/php5 /usr/include/php5 /usr/include/php5/main /
 
 add_library (cm SHARED cm.cc cm_class.cc cm_adapter.cc crc32.cc)
 
-target_link_libraries(cm PUBLIC memcached)
-target_link_libraries(cm PUBLIC stdc++)
-target_link_libraries(cm PRIVATE debugso)
+target_link_libraries(cm memcached)
+target_link_libraries(cm stdc++)
+target_link_libraries(cm debugso)
 
 install(TARGETS cm DESTINATION ${PHP_OUT})
