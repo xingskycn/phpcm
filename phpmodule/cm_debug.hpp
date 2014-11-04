@@ -12,7 +12,7 @@
 #else
 
 #define IFDEBUG_A if (this->debug) {
-#define IFDEBUG_NA if (!this->debug) {
+#define IFDEBUG_NA if (! this->debug) {
 #define IFDEBUG_ELSE } else {
 #define IFDEBUG_E }
 

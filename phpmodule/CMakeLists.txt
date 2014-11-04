@@ -9,10 +9,10 @@ set(DEBUG ON CACHE BOOL "Rel")
 
 if (DEBUG)
     set(CMAKE_BUILD_TYPE, "Debug")
-    set(_FUNC_DEBUG_ OFF)
+    set(_FUNC_DEBUG_ ON CACHE BOOL "Release")
 else (DEBUG)
     set(CMAKE_BUILD_TYPE, "Release")
-    set(_FUNC_DEBUG_ ON CACHE BOOL "Release")
+    set(_FUNC_DEBUG_ OFF)
 endif (DEBUG)
 
 #find_library(DEBUGSO debugso PATHS ./debug/)

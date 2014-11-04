@@ -10,9 +10,9 @@
 CmAdapter::CmAdapter(const char* serverName, int serverPort, bool stable, bool debug)
 {
     this->stable = stable;
+    this->debug = debug;
 
     IFDEBUG_A
-        this->debug = debug;
         INFO("PHPCM: Debug output %s", "started");
     IFDEBUG_E
 
@@ -85,9 +85,7 @@ char* CmAdapter::get(char *key, size_t *return_value_length)
     uint32_t flags=0;
     memcached_return_t error;
 
-    IFDEBUG_NA
-        return memcached_get(memc, key, strlen (key), return_value_length, &flags, &error);
-    IFDEBUG_ELSE
+    IFDEBUG_A
         char* ret = memcached_get(memc, key, strlen (key), return_value_length, &flags, &error);
         if (ret == NULL) {
             INFO("PHPCM: get: result=%s", "fail/or-not-set");
@@ -95,6 +93,8 @@ char* CmAdapter::get(char *key, size_t *return_value_length)
             INFO("PHPCM: get: result=%s", "success/isset");
         }
         return ret;
+    IFDEBUG_ELSE
+        return memcached_get(memc, key, strlen (key), return_value_length, &flags, &error);
     IFDEBUG_E
 }
 

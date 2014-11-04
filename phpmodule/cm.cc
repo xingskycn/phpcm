@@ -100,7 +100,7 @@ PHP_METHOD(cm, __construct)
     zval *object = getThis();
     std::vector<ServerPair> configuration;
     zval* zval_conf;
-    bool debug;
+    bool debug = false;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|b", &zval_conf, &debug) == FAILURE) {
         RETURN_NULL();
