@@ -6,7 +6,7 @@ class SimpleTest extends PHPUnit_Framework_TestCase
     
     public function setup()
     {
-	$this->cm = new Cm([ ['host' => '127.0.0.1', 'port'=>11211] ]);
+	$this->cm = new Cm([ ['host' => '127.0.0.1', 'port'=>11211] ], true);
     }
 
     public function testConstruct()
