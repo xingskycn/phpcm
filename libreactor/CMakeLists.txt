@@ -11,6 +11,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
 #add_library (debugso SHARED debug.cpp ${DEBUG_CPP})
 #install (TARGETS debugso DESTINATION /usr/lib/)
 add_library(reactor SHARED reactor.cpp)
-#add_executable(test_reactor reactor.cpp main.cpp)
+add_executable(test_reactor reactor.cpp main.cpp)
 install (TARGETS reactor DESTINATION /usr/lib/)
 

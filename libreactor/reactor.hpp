@@ -25,7 +25,7 @@ class Reactor {
 
     public:
         Reactor();
-        ReactorRVal addEvent(ReactorEStruct event);
+        ReactorRVal addEvent(ReactorEStruct event, bool sync);
         bool addHandler(ReactorEE onEvent, ReactorHandler);
     private:
         void processEvent();

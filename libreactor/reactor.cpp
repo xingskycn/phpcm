@@ -13,15 +13,20 @@ Reactor::Reactor()
 **** Public
 */
 
-ReactorRVal Reactor::addEvent(ReactorEStruct event)
+ReactorRVal Reactor::addEvent(ReactorEStruct event, bool sync)
 {
     ReactorRVal empty = ReactorREmpty;
     event.id = makeId();
     returns[event.id] = empty;
     events.push_back(event);
-    while (returns[event.id].data == NULL) { //while event has not response
-        processEvent();
+    if (sync) {
+        while (returns[event.id].data == NULL) { //while event has not response
+            processEvent();
+        }
     }
+    ReactorRVal ret = returns[event.id];
+    //delete returns[event.id];
+    return ret;
 }
 
 bool Reactor::addHandler(ReactorEE onEvent, ReactorHandlerNamed)
@@ -44,8 +49,8 @@ ReactorEID Reactor::makeId()
 
 void Reactor::processEvent()
 {
-//    ReactorEStruct event = events.pull(); //first and remove first
-    ReactorEStruct event;
+    ReactorEStruct event = events.back(); //first and remove first
+    events.pop_back();
     //event has not handler
     if (handlers.find(event.event) == handlers.end()) {
 //        WARNING(PREFIX("event %lld has not handler"), event.event);
