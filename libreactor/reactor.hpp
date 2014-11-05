@@ -1,3 +1,7 @@
+
+#ifndef REACTOR_HPP
+#define REACTOR_HPP
+
 #include <queue>
 #include <map>
 #include <string>
@@ -50,3 +54,5 @@ class Reactor {
         std::map<ReactorEID, ReactorRVal> returns;
         std::map<ReactorEID, ReactorUserCallback> storedCallbacks;
 };
+
+#endif
