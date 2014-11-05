@@ -35,6 +35,25 @@ CmAdapter::~CmAdapter()
     IFDEBUG_E
 }
 
+bool CmAdapter::flush()
+{
+    IFDEBUG_A
+        INFO("PHPCM: flush: %s", "no info");
+    IFDEBUG_E
+    memcached_return_t rc= memcached_flush(memc, 0);
+    if (rc == MEMCACHED_SUCCESS) {
+        IFDEBUG_A
+            INFO("PHPCM: flush: %s", "success");
+        IFDEBUG_E
+        return true;
+    } else {
+        IFDEBUG_A
+            INFO("PHPCM: flush: %s", "fail");
+        IFDEBUG_E
+        return false;
+    }
+}
+
 bool CmAdapter::set(char* key, char* val, int val_len, long expire)
 {
     IFDEBUG_A

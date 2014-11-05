@@ -24,6 +24,8 @@ class Cm {
         bool remove(char *key);
         //add Value to Key if key not exists
         bool add(char *key, char *value, int value_len, char *dependency, long expire);
+        //flush all values
+        bool flush();
     private:
         std::map<unsigned char, std::vector<CmAdapter*> > backends;
         std::map<std::string, CmAdapter*> realBackends;

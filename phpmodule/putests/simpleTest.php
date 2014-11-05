@@ -78,4 +78,14 @@ class SimpleTest extends PHPUnit_Framework_TestCase
 	$this->assertEquals($keys["mkeyB"], "mvalB");
     }
 
+    public function testFlush()
+    {
+	$this->cm->set("aaa_flush", "aval");
+	$this->cm->set("bbb_flush", "bval");
+	$this->assertTrue($this->cm->flush());
+	$this->assertNull($this->cm->get("aaa_flush"));
+	$this->assertNull($this->cm->get("bbb_flush"));
+    }
+
 }
+

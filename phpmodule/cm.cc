@@ -177,6 +177,18 @@ PHP_METHOD(cm, __construct)
     obj->cm = cm;
 }
 
+//bool flush();
+PHP_METHOD(cm, flush)
+{
+    Cm *cm;
+    cm_object *obj = (cm_object *)zend_object_store_get_object(
+        getThis() TSRMLS_CC);
+    cm = obj->cm;
+    if (cm != NULL) {
+        RETURN_BOOL(cm->flush());
+    }
+}
+
 //bool remove(char *key);
 PHP_METHOD(cm, remove)
 {
@@ -359,6 +371,7 @@ zend_function_entry cm_methods[] = {
     PHP_ME(cm,  get,             NULL, ZEND_ACC_PUBLIC)
     PHP_ME(cm,  mget,            NULL, ZEND_ACC_PUBLIC)
     PHP_ME(cm,  remove,          NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(cm,  flush,          NULL, ZEND_ACC_PUBLIC)
     {NULL, NULL, NULL}
 };
 
