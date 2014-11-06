@@ -12,5 +12,10 @@ add_executable(persistentd persistentd.cpp frontend.cpp thread.cpp backend.cpp)
 target_link_libraries(persistentd reactor)
 target_link_libraries(persistentd debugso)
 
+add_executable(test test.cpp frontend.cpp thread.cpp backend.cpp)
+target_link_libraries(test reactor)
+target_link_libraries(test debugso)
+
+
 install (TARGETS persistentd DESTINATION /usr/bin/)
 
