@@ -17,8 +17,12 @@ int main(int argc, char* argv[])
 {
     INFO("loader: starting: %s", "loading...");
     Backend *backend = new Backend();
+    pthread_t backend_t = runThread(backend);
     Frontend *frontend = new Frontend(backend);
     *frontend << testCast("get A\n");
+    *frontend << testCast("get B\n");
+    *frontend << testCast("get C\n");
+    *frontend << testCast("get D\n");
     DEBUG("loader: %s", "runbackend");
     backend->start();
     INFO("loader: exiting: %s", "ok");

@@ -49,7 +49,8 @@ Frontend& Frontend::operator<<(FrontendBVal add)
         DEBUG2("frontend: writebuffer/append: %s", add.data.c_str());
         buffers[add.socket] = buffers[add.socket] + add.data;
     }
-    if (std::size_t pos = buffers[add.socket].find("\n") != std::string::npos) {
+    std::size_t pos = buffers[add.socket].find("\n");
+    if (pos != std::string::npos) {
         DEBUG2("frontend: writebuffer/newline: ", "found!");
         Packet *packet = new Packet;
         packet->frontendContext = this;

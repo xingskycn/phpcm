@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string.h>
 
 #include "reactor.hpp"
@@ -31,11 +32,11 @@ void Backend::addEvent(ReactorEStruct event)
 {
     ReactorEStruct eventWrapper = {
          .event = event.event,
-         .data = new char [sizeof(event) + sizeof(this)],
-         .length = sizeof(event) + sizeof(this),
+         .data = new char [sizeof(ReactorEStruct) + sizeof(this)],
+         .length = sizeof(ReactorEStruct) + sizeof(this),
         };
     memcpy(eventWrapper.data, this, sizeof(this));
-    memcpy((void*)((long)eventWrapper.data + (long)sizeof(this)), &event, sizeof(event));
+    memcpy((void*)((long)eventWrapper.data + (long)sizeof(this)), &event, sizeof(ReactorEStruct));
     reactor->addEventAsync(eventWrapper, this->callback);
 }
 
@@ -44,6 +45,10 @@ void Backend::addEvent(ReactorEStruct event)
 ReactorRVal Backend::handler_On_Set(Packet* inPacket, Reactor *reactor)
 {
     DEBUG("backend: handler_On_Set: %s", "start");
+
+//    std::cout << "command:" << inPacket->data << std::endl;
+    int client = (inPacket->client);
+    std::cout << "command(" << client << ")> " << inPacket->data << std::endl;
 
     Packet *outPacket = new Packet;
     outPacket->frontendContext = inPacket->frontendContext;
@@ -65,9 +70,9 @@ ReactorRVal Backend::s_handler_On_Set(void *data, size_t length, Reactor *reacto
 {
     void *unpacked_data = unpackEventData(data, length);
     void *context = unpackEventContext(data, length);
-    ReactorRVal forReturn = ((Backend *)context)->handler_On_Set((Packet*)unpacked_data, reactor);
-//    delete (char*)data;
-//    delete (char*)unpacked_data;
+    ReactorRVal forReturn = ((Backend *)context)->handler_On_Set((Packet*)(((ReactorEStruct*)unpacked_data)->data), reactor);
+    delete (char*)data;
+    delete (char*)unpacked_data;
     return forReturn;
 }
 
