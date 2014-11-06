@@ -11,9 +11,9 @@ Backend::Backend()
 {
     reactor = new Reactor();
     reactor->addHandler(Event_On_Set, Backend::s_handler_On_Set);
-//    reactor->addHandler(Event_On_Del, Backend::s_handler_On_Set);
-//    reactor->addHandler(Event_On_Get, Backend::s_handler_On_Set);
-//    reactor->addHandler(Event_On_Exec, Backend::s_handler_On_Set);
+    reactor->addHandler(Event_On_Del, Backend::s_handler_On_Del);
+    reactor->addHandler(Event_On_Get, Backend::s_handler_On_Get);
+    reactor->addHandler(Event_On_Exec, Backend::s_handler_On_Exec);
 }
 
 void Backend::setCallback(BackendResponderNamed)
@@ -46,9 +46,8 @@ ReactorRVal Backend::handler_On_Set(Packet* inPacket, Reactor *reactor)
 {
     DEBUG("backend: handler_On_Set: %s", "start");
 
-//    std::cout << "command:" << inPacket->data << std::endl;
     int client = (inPacket->client);
-    std::cout << "command(" << client << ")> " << inPacket->data << std::endl;
+    std::cout << "commandSet(" << client << ")> " << inPacket->data << std::endl;
 
     Packet *outPacket = new Packet;
     outPacket->frontendContext = inPacket->frontendContext;
@@ -64,6 +63,71 @@ ReactorRVal Backend::handler_On_Set(Packet* inPacket, Reactor *reactor)
     return forReturn;
 }
 
+ReactorRVal Backend::handler_On_Get(Packet* inPacket, Reactor *reactor)
+{
+    DEBUG("backend: handler_On_Get: %s", "start");
+
+    int client = (inPacket->client);
+    std::cout << "commandGet(" << client << ")> " << inPacket->data << std::endl;
+
+    Packet *outPacket = new Packet;
+    outPacket->frontendContext = inPacket->frontendContext;
+    outPacket->client = inPacket->client;
+    outPacket->data = "response from handler_On_Get";
+
+    ReactorRVal forReturn = {
+        .data = outPacket,
+        .length = sizeof(outPacket),
+    };
+
+    DEBUG("backend: handler_On_Get: %s", "done");
+    return forReturn;
+}
+
+
+ReactorRVal Backend::handler_On_Del(Packet* inPacket, Reactor *reactor)
+{
+    DEBUG("backend: handler_On_Del: %s", "start");
+
+    int client = (inPacket->client);
+    std::cout << "commandDel(" << client << ")> " << inPacket->data << std::endl;
+
+    Packet *outPacket = new Packet;
+    outPacket->frontendContext = inPacket->frontendContext;
+    outPacket->client = inPacket->client;
+    outPacket->data = "response from handler_On_Del";
+
+    ReactorRVal forReturn = {
+        .data = outPacket,
+        .length = sizeof(outPacket),
+    };
+
+    DEBUG("backend: handler_On_Del: %s", "done");
+    return forReturn;
+}
+
+ReactorRVal Backend::handler_On_Exec(Packet* inPacket, Reactor *reactor)
+{
+    DEBUG("backend: handler_On_Exec: %s", "start");
+
+    int client = (inPacket->client);
+    std::cout << "commandExec(" << client << ")> " << inPacket->data << std::endl;
+
+    Packet *outPacket = new Packet;
+    outPacket->frontendContext = inPacket->frontendContext;
+    outPacket->client = inPacket->client;
+    outPacket->data = "response from handler_On_Exec";
+
+    ReactorRVal forReturn = {
+        .data = outPacket,
+        .length = sizeof(outPacket),
+    };
+
+    DEBUG("backend: handler_On_Exec: %s", "done");
+    return forReturn;
+}
+
+
 /* helpers */
 
 ReactorRVal Backend::s_handler_On_Set(void *data, size_t length, Reactor *reactor)
@@ -75,6 +139,37 @@ ReactorRVal Backend::s_handler_On_Set(void *data, size_t length, Reactor *reacto
     delete (char*)unpacked_data;
     return forReturn;
 }
+
+ReactorRVal Backend::s_handler_On_Get(void *data, size_t length, Reactor *reactor)
+{
+    void *unpacked_data = unpackEventData(data, length);
+    void *context = unpackEventContext(data, length);
+    ReactorRVal forReturn = ((Backend *)context)->handler_On_Get((Packet*)(((ReactorEStruct*)unpacked_data)->data), reactor);
+    delete (char*)data;
+    delete (char*)unpacked_data;
+    return forReturn;
+}
+
+ReactorRVal Backend::s_handler_On_Del(void *data, size_t length, Reactor *reactor)
+{
+    void *unpacked_data = unpackEventData(data, length);
+    void *context = unpackEventContext(data, length);
+    ReactorRVal forReturn = ((Backend *)context)->handler_On_Del((Packet*)(((ReactorEStruct*)unpacked_data)->data), reactor);
+    delete (char*)data;
+    delete (char*)unpacked_data;
+    return forReturn;
+}
+
+ReactorRVal Backend::s_handler_On_Exec(void *data, size_t length, Reactor *reactor)
+{
+    void *unpacked_data = unpackEventData(data, length);
+    void *context = unpackEventContext(data, length);
+    ReactorRVal forReturn = ((Backend *)context)->handler_On_Exec((Packet*)(((ReactorEStruct*)unpacked_data)->data), reactor);
+    delete (char*)data;
+    delete (char*)unpacked_data;
+    return forReturn;
+}
+
 
 /* private */
 

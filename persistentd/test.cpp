@@ -20,9 +20,9 @@ int main(int argc, char* argv[])
     pthread_t backend_t = runThread(backend);
     Frontend *frontend = new Frontend(backend);
     *frontend << testCast("get A\n");
-    *frontend << testCast("get B\n");
-    *frontend << testCast("get C\n");
-    *frontend << testCast("get D\n");
+    *frontend << testCast("set A serialized....\n");
+    *frontend << testCast("exec A\n");
+    *frontend << testCast("del A\n");
     DEBUG("loader: %s", "runbackend");
     backend->start();
     INFO("loader: exiting: %s", "ok");

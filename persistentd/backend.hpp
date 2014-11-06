@@ -24,14 +24,14 @@ class Backend : public IServerThread {
         void addEvent(ReactorEStruct event);
 
         ReactorRVal handler_On_Set(Packet *inPacket, Reactor* reactor);
-//        ReactorRVal handler_On_Get(void *data, size_t length, Reactor* reactor);
-//        ReactorRVal handler_On_Del(void *data, size_t length, Reactor* reactor);
-//        ReactorRVal handler_On_Exec(void *data, size_t length, Reactor* reactor);
+        ReactorRVal handler_On_Get(Packet *inPacket, Reactor* reactor);
+        ReactorRVal handler_On_Del(Packet *inPacket, Reactor* reactor);
+        ReactorRVal handler_On_Exec(Packet *inPacket,  Reactor* reactor);
 
         static ReactorRVal s_handler_On_Set(void *data, size_t length, Reactor* reactor);
-//        static ReactorRVal s_handler_On_Get(void *data, size_t length, Reactor* reactor);
-//        static ReactorRVal s_handler_On_Del(void *data, size_t length, Reactor* reactor);
-//        static ReactorRVal s_handler_On_Exec(void *data, size_t length, Reactor* reactor);
+        static ReactorRVal s_handler_On_Get(void *data, size_t length, Reactor* reactor);
+        static ReactorRVal s_handler_On_Del(void *data, size_t length, Reactor* reactor);
+        static ReactorRVal s_handler_On_Exec(void *data, size_t length, Reactor* reactor);
     private:
         static void* unpackEventData(void *data, size_t length);
         static void* unpackEventContext(void *data, size_t length);

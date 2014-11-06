@@ -50,14 +50,34 @@ Frontend& Frontend::operator<<(FrontendBVal add)
         buffers[add.socket] = buffers[add.socket] + add.data;
     }
     std::size_t pos = buffers[add.socket].find("\n");
-    if (pos != std::string::npos) {
+    while (pos != std::string::npos) {
         DEBUG2("frontend: writebuffer/newline: ", "found!");
+        std::string cmdline = buffers[add.socket].substr(0, pos);
+        std::size_t space_pos = cmdline.find(" ");
+        std::string cmd = buffers[add.socket].substr(0, space_pos);
+        std::string args = cmdline.substr(space_pos+1);
+
+        ReactorEE event;
+        if (cmd.compare("get") == 0) {
+            event = Event_On_Get;
+        } else if (cmd.compare("set") == 0) {
+            event = Event_On_Set;
+        } else if (cmd.compare("del") == 0) {
+            event = Event_On_Del;
+        } else if (cmd.compare("exec") == 0) {
+            event = Event_On_Exec;
+        } else {
+            event = 100;
+        }
+
         Packet *packet = new Packet;
         packet->frontendContext = this;
         packet->client = add.socket;
-        packet->data = buffers[add.socket].substr(0, pos);
-        ReactorEStruct ev = { .event = Event_On_Set, .data = packet, .length = sizeof(packet) };
+        packet->data = args;
+        ReactorEStruct ev = { .event = event, .data = packet, .length = sizeof(packet) };
         backend->addEvent(ev);
+        buffers[add.socket] = buffers[add.socket].substr(pos+1);
+        pos = buffers[add.socket].find("\n");
     }
     DEBUG("frontend: writebuffer: %s", "ok");
     return *this;
