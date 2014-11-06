@@ -152,6 +152,23 @@ bool Cm::remove(char *key)
     return summary;
 }
 
+//flush all backends
+bool Cm::flush()
+{
+    bool summary = true;
+    for (std::map<std::string, CmAdapter*>::iterator it = realBackends.begin(); it != realBackends.end(); ++it)
+    {
+	summary = summary && it->second->flush();
+    }
+    for (std::map<std::string, std::vector<CmAdapter*> >::iterator it = realBackendsReplicas.begin(); it != realBackendsReplicas.end(); ++it)
+    {
+	for (unsigned int i=0; i<it->second.size(); i++) {
+	    summary = summary && it->second[i]->flush();
+	}
+    }
+    return summary;
+}
+
 /*
 * Internal/private
 */
