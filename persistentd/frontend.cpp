@@ -28,7 +28,7 @@ void* Frontend::start()
 
 void Frontend::onResponse(FrontendCSocket client, std::string response)
 {
-    std::cout << response << std::endl;
+//    std::cout << response << std::endl;
 }
 
 void Frontend::s_onResponse(ReactorRVal ret)

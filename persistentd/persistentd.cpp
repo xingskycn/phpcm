@@ -2,6 +2,7 @@
 
 #include "debug.hpp"
 
+#include "storage.hpp"
 #include "frontend.hpp"
 #include "backend.hpp"
 #include "thread.hpp"
@@ -9,7 +10,8 @@
 int main(int argc, char* argv[])
 {
     INFO("loader: starting: %s", "loading...");
-    Backend *backend = new Backend();
+    Storage *storage = new Storage();
+    Backend *backend = new Backend(storage);
     Frontend *frontend = new Frontend(backend);
     pthread_t t1 = runThread(frontend);
     pthread_t t2 = runThread(backend);

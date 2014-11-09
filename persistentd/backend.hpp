@@ -4,9 +4,10 @@
 #include <queue>
 
 #include "reactor.hpp"
-#include "packet.hpp"
 
+#include "packet.hpp"
 #include "IServerThread.hpp"
+#include "storage.hpp"
 
 #define BackendResponder ReactorUserCallback
 #define BackendResponderNamed ReactorUserCallbackNamed
@@ -18,7 +19,7 @@
 
 class Backend : public IServerThread {
     public:
-        Backend();
+        Backend(Storage *storage);
         void setCallback(BackendResponder);
         virtual void* start(); //start server
         void addEvent(ReactorEStruct event);
@@ -35,9 +36,12 @@ class Backend : public IServerThread {
     private:
         static void* unpackEventData(void *data, size_t length);
         static void* unpackEventContext(void *data, size_t length);
+        void notify();
 
         Reactor *reactor;
+        Storage *storage;
         std::queue<ReactorEStruct> inQueue;
+        pthread_mutex_t waiter;
 
         BackendResponderNamed;
 };
