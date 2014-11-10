@@ -24,9 +24,14 @@ class Cm {
         bool remove(char *key);
         //add Value to Key if key not exists
         bool add(char *key, char *value, int value_len, char *dependency, long expire);
-        //flush all values
+        //flush all values in all backends
         bool flush();
+        //flush all values in one backend
+        bool flush(long shardId);
     private:
+        std::vector<CmAdapter*> getShardVector(long shardId);
+
+        std::vector<std::vector<CmAdapter*> > shards;
         std::map<unsigned char, std::vector<CmAdapter*> > backends;
         std::map<std::string, CmAdapter*> realBackends;
         std::map<std::string, std::vector<CmAdapter*> > realBackendsReplicas;

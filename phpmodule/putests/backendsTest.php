@@ -115,6 +115,36 @@ class BackendsTest extends PHPUnit_Framework_TestCase
 	$this->assertEquals($rcm1->get("replicated"), "valueR", "eq-2");
     }
 
+    public function testFlushSingleShard()
+    {
+        $shardA = [ 'host' => '127.0.0.1', 'port'=>11211 ];
+        $shardB = [ 'host' => '127.0.0.1', 'port'=>11212 ];
+        $scm = new Cm([
+            $shardA,
+            $shardB
+        ]);
+        $this->assertTrue($scm->set("a", "valA"), "set a");
+        $this->assertTrue($scm->set("b", "valB"), "set b");
+        $this->assertTrue($scm->flush([ 0 ]), "flush");
+        $this->assertNull($scm->get("b"), "check b");
+        $this->assertEquals($scm->get("a"), "valA", "check a");
+    }
+
+    public function testFlushSingleShardSecond()
+    {
+        $shardA = [ 'host' => '127.0.0.1', 'port'=>11211 ];
+        $shardB = [ 'host' => '127.0.0.1', 'port'=>11212 ];
+        $scm = new Cm([
+            $shardA,
+            $shardB
+        ]);
+        $this->assertTrue($scm->set("a", "valA"), "set a");
+        $this->assertTrue($scm->set("b", "valB"), "set b");
+        $this->assertTrue($scm->flush([ 1 ]), "flush");
+        $this->assertNull($scm->get("a"), "check a");
+        $this->assertEquals($scm->get("b"), "valB", "check b");
+    }
+
     public function testReplicationAndSharding()
     {
 	$replica0 = [ 'host' => '127.0.0.1', 'port'=>11211 ];
