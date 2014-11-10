@@ -185,7 +185,33 @@ PHP_METHOD(cm, flush)
         getThis() TSRMLS_CC);
     cm = obj->cm;
     if (cm != NULL) {
-        RETURN_BOOL(cm->flush());
+        zval* zval_arr;
+
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|a", &zval_arr) == FAILURE) {
+            RETURN_NULL();
+        }
+
+        if (Z_TYPE_P(zval_arr) != IS_ARRAY) {
+            RETURN_BOOL(cm->flush());
+        }
+
+        HashTable *z_arr;
+        z_arr = Z_ARRVAL_P(zval_arr);
+
+        HashPosition pointer;
+        zval **data;
+        bool success=true;
+        for(zend_hash_internal_pointer_reset_ex(z_arr, &pointer);
+            zend_hash_get_current_data_ex(z_arr, (void**) &data, &pointer) == SUCCESS;
+            zend_hash_move_forward_ex(z_arr, &pointer)) {
+            if (Z_TYPE_PP(data) != IS_LONG) {
+                zend_error(E_RECOVERABLE_ERROR, "array entry is not Long (shard number)");
+            }
+            long shardId = Z_LVAL_PP(data);
+            success = success && cm->flush(shardId);
+        }
+        RETURN_BOOL(success);
+
     }
 }
 

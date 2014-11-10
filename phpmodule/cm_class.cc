@@ -29,6 +29,9 @@ Cm::Cm(std::vector<ServerPair> config, bool debug) {
 	    CmAdapter* backend;
 	    if (realBackends.find(hp) == realBackends.end()) {
 		backend = newServerPairAdapter(config[j], debug);
+		std::vector<CmAdapter*> single;
+		single.push_back(backend);
+		shards.push_back(single);
 		realBackends[hp] = backend;
 	    } else {
 	        backend = realBackends[hp];
@@ -46,6 +49,7 @@ Cm::Cm(std::vector<ServerPair> config, bool debug) {
 	    std::vector<CmAdapter*> repl;
 	    if (realBackendsReplicas.find(hp) == realBackendsReplicas.end()) {
 		repl = newServerPairReplica(config[j].replica, debug);
+		shards.push_back(repl);
 		realBackendsReplicas[hp] = repl;
 	    } else {
 		repl = realBackendsReplicas[hp];
@@ -152,6 +156,18 @@ bool Cm::remove(char *key)
     return summary;
 }
 
+bool Cm::flush(long shardId)
+{
+    std::vector<CmAdapter*> adapters = this->getShardVector(shardId);
+    bool summary=true;
+    bool been=false;
+    for (int i=0; i<adapters.size(); i++) {
+        summary = summary && adapters[i]->flush();
+        been=true;
+    }
+    return summary && been;
+}
+
 //flush all backends
 bool Cm::flush()
 {
@@ -246,6 +262,23 @@ char* Cm::processGetDependency(char *value, int value_len, int *newValue_len)
     }
 }
 
+std::vector<CmAdapter*> Cm::getShardVector(long shardId)
+{
+    if (shardId >= shards.size()) {
+        IFDEBUG_A
+            std::string hp;
+            std::stringstream ss;
+            ss << "Id=" << shardId << ":not_found";
+            ss >> hp;
+            WARNING("PHPCM: flush by shardId: %s", hp.c_str());
+        IFDEBUG_E
+
+        std::vector<CmAdapter*> empty;
+        return empty;
+    }
+    return shards[shardId];
+}
+
 CmAdapter* newServerPairAdapter(ServerPair config, bool debug)
 {
     CmAdapter* backend = new CmAdapter(config.serverName, config.port, config.stable, debug);
@@ -260,3 +293,4 @@ std::vector<CmAdapter*> newServerPairReplica(std::vector<ServerPair> list, bool 
     }
     return replica;
 }
+
