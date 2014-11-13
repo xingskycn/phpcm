@@ -21,7 +21,7 @@ configure_file(config.h.in config.h)
 
 include_directories(/usr/include/php5 /usr/include/php5 /usr/include/php5/main /usr/include/php5/TSRM /usr/include/php5/Zend /usr/include/php5/ext /usr/include/php5/ext/date/lib)
 
-add_library (cm SHARED cm.cc cm_class.cc cm_adapter.cc crc32.cc)
+add_library (cm SHARED cm.cc cm_wrapper.cc cm_class.cc cm_adapter.cc cm_interface.cc crc32.cc)
 
 target_link_libraries(cm memcached)
 target_link_libraries(cm stdc++)

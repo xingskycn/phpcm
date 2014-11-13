@@ -1,6 +1,8 @@
 #include <iostream>
 
 #include "php_cm.hpp"
+#include "cm_interface.hpp"
+#include "cm_wrapper.hpp"
 #include "cm_class.hpp"
 #include "cm_ServerPair.hpp"
 #include "cm_RVal.hpp"
@@ -12,7 +14,7 @@ zend_object_handlers cm_object_handlers;
 
 struct cm_object {
     zend_object std;
-    Cm *cm;
+    CmInterface *cm;
 };
 
 void cm_free_storage(void *object TSRMLS_DC)
@@ -96,10 +98,11 @@ ServerPair makeSPfromPhpArray(zval **data)
 
 PHP_METHOD(cm, __construct)
 {
-    Cm *cm = NULL;
     zval *object = getThis();
     std::vector<ServerPair> configuration;
+    std::vector<ServerPair> newconfiguration;
     zval* zval_conf;
+    bool useResharding = false;
     bool debug = false;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|b", &zval_conf, &debug) == FAILURE) {
@@ -122,12 +125,20 @@ PHP_METHOD(cm, __construct)
 
 	ServerPair server = makeSPfromPhpArray(data);
 	if (server.port > 0) {
-	    configuration.push_back(server);
+	    if (server.stable) {
+		configuration.push_back(server);
+		newconfiguration.push_back(server);
+	    } else {
+		newconfiguration.push_back(server);
+		useResharding = true;
+	    }
 	} else if (server.port == -1) { //not 'host' or 'newhost' entry, try replica array
 	    if (Z_TYPE_PP(data) != IS_ARRAY) {
 		zend_error(E_RECOVERABLE_ERROR, "configuration ROW is not Array");
 		RETURN_NULL();
 	    }
+	    bool isNewShard=false;
+	    bool isNewShardSet=false;
 	    HashTable *z_conf_row;
 	    z_conf_row = Z_ARRVAL_PP(data);
 	    std::vector<ServerPair> replicas;
@@ -142,7 +153,21 @@ PHP_METHOD(cm, __construct)
 		}
 		ServerPair server = makeSPfromPhpArray(replicadata);
 		if (server.port > 0) {
+		    if (server.stable && isNewShard) {
+			zend_error(E_RECOVERABLE_ERROR, "bad NEW shard with ReShard in configuration (all replicas must be 'newhost')");
+		    }
+		    if (!server.stable && !isNewShard) {
+			zend_error(E_RECOVERABLE_ERROR, "bad NEW shard with ReShard in configuration (all replicas must be 'newhost')");
+		    }
 		    replicas.push_back(server);
+		    if (!isNewShardSet) {
+			isNewShardSet = true;
+			if (!server.stable) {
+			    isNewShard = true;
+			} else {
+			    isNewShard = false;
+			}
+		    }
 		} else if (server.port == -1) {
 		    zend_error(E_RECOVERABLE_ERROR, "configuration ROW is not has not 'host' or 'newhost' entry");
 		    RETURN_NULL();
@@ -156,7 +181,13 @@ PHP_METHOD(cm, __construct)
 		replica.stable = false;
 		replica.isReplica = true;
 		replica.replica = replicas;
-		configuration.push_back(replica);
+		if (!isNewShard) {
+		    configuration.push_back(replica);
+		    newconfiguration.push_back(replica);
+		} else {
+		    useResharding = true;
+		    newconfiguration.push_back(replica);
+		}
 	    } else {
 		zend_error(E_RECOVERABLE_ERROR, "configuration ROW is empty Array");
 		RETURN_NULL();
@@ -172,15 +203,24 @@ PHP_METHOD(cm, __construct)
 	zend_error(E_RECOVERABLE_ERROR, "configuration too big");
 	RETURN_NULL();
     }
-    cm = new Cm(configuration, debug);
-    cm_object *obj = (cm_object *)zend_object_store_get_object(object TSRMLS_CC);
-    obj->cm = cm;
+    if (!useResharding) {
+        Cm *cmReal = NULL;
+        cmReal = new Cm(configuration, debug);
+        cm_object *obj = (cm_object *)zend_object_store_get_object(object TSRMLS_CC);
+        obj->cm = cmReal;
+    } else {
+        Cm *cmOld = new Cm(configuration, debug);
+        Cm *cmNew = new Cm(newconfiguration, debug);
+        CmWrapper *cmW = new CmWrapper(cmOld, cmNew, debug);
+        cm_object *obj = (cm_object *)zend_object_store_get_object(object TSRMLS_CC);
+        obj->cm = cmW;
+    }
 }
 
 //bool flush();
 PHP_METHOD(cm, flush)
 {
-    Cm *cm;
+    CmInterface *cm;
     cm_object *obj = (cm_object *)zend_object_store_get_object(
         getThis() TSRMLS_CC);
     cm = obj->cm;
@@ -218,7 +258,7 @@ PHP_METHOD(cm, flush)
 //bool remove(char *key);
 PHP_METHOD(cm, remove)
 {
-    Cm *cm;
+    CmInterface *cm;
     cm_object *obj = (cm_object *)zend_object_store_get_object(
         getThis() TSRMLS_CC);
     cm = obj->cm;
@@ -243,7 +283,7 @@ PHP_METHOD(cm, remove)
 //char* get(char *key, size_t *return_value_length)
 PHP_METHOD(cm, get)
 {
-    Cm *cm;
+    CmInterface *cm;
     cm_object *obj = (cm_object *)zend_object_store_get_object(
         getThis() TSRMLS_CC);
     cm = obj->cm;
@@ -274,7 +314,7 @@ PHP_METHOD(cm, get)
 //std::map<std::string, RVal> mget(std::vector<std::string> keys)
 PHP_METHOD(cm, mget)
 {
-    Cm *cm;
+    CmInterface *cm;
     cm_object *obj = (cm_object *)zend_object_store_get_object(
         getThis() TSRMLS_CC);
     cm = obj->cm;
@@ -315,7 +355,7 @@ PHP_METHOD(cm, mget)
 //bool set(char *key, char *value, bool isDependency, char *dependency, long expire)
 PHP_METHOD(cm, set)
 {
-    Cm *cm;
+    CmInterface *cm;
     cm_object *obj = (cm_object *)zend_object_store_get_object(
         getThis() TSRMLS_CC);
     cm = obj->cm;
@@ -354,7 +394,7 @@ PHP_METHOD(cm, set)
 //bool add(char *key, char *value, bool isDependency, char *dependency, long expire)
 PHP_METHOD(cm, add)
 {
-    Cm *cm;
+    CmInterface *cm;
     cm_object *obj = (cm_object *)zend_object_store_get_object(
         getThis() TSRMLS_CC);
     cm = obj->cm;
