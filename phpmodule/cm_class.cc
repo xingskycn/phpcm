@@ -39,6 +39,7 @@ Cm::Cm(std::vector<ServerPair> config, bool debug) {
 	    std::vector<CmAdapter*> one;
 	    one.push_back(backend);
 	    backends[(unsigned char)i] = one;
+	    backendStrings[(unsigned char)i] = hp;
 	} else {
 	    std::stringstream ss;
 	    for (unsigned int k=0; k<config[j].replica.size(); k++) {
@@ -55,6 +56,7 @@ Cm::Cm(std::vector<ServerPair> config, bool debug) {
 		repl = realBackendsReplicas[hp];
 	    }
 	    backends[(unsigned char)i] = repl;
+	    backendStrings[(unsigned char)i] = hp;
 	}
 	j++;
 	if (j==config.size()) j=0;
@@ -81,6 +83,10 @@ Cm::~Cm() {
     realBackendsReplicas.clear();
 }
 
+std::string Cm::getBackendString(unsigned char i)
+{
+    return backendStrings[i];
+}
 
 /*
 * Public Interface
@@ -89,11 +95,11 @@ Cm::~Cm() {
 bool Cm::set(char *key, char *value, int value_len, char *dependency, long expire)
 {
     bool summary=true;
-    int j = backends[key[strlen(key)-1]].size();
+    int j = backends[this->getShard(key)].size();
     for (int i=0; i<j; i++) {
         int newValue_len=0;
         char* newValue = this->processSetDependency(value, value_len, dependency, &newValue_len);
-        summary = summary && backends[key[strlen(key)-1]][i]->set(key, newValue, newValue_len, expire);
+        summary = summary && backends[this->getShard(key)][i]->set(key, newValue, newValue_len, expire);
     }
     return summary;
 }
@@ -101,11 +107,11 @@ bool Cm::set(char *key, char *value, int value_len, char *dependency, long expir
 bool Cm::add(char *key, char *value, int value_len, char *dependency, long expire)
 {
     bool summary=true;
-    int j = backends[key[strlen(key)-1]].size();
+    int j = backends[this->getShard(key)].size();
     for (int i=0; i<j; i++) {
         int newValue_len=0;
         char* newValue = this->processSetDependency(value, value_len, dependency, &newValue_len);
-        summary = summary && backends[key[strlen(key)-1]][i]->add(key, newValue, newValue_len, expire);
+        summary = summary && backends[this->getShard(key)][i]->add(key, newValue, newValue_len, expire);
     }
     return summary;
 }
@@ -127,9 +133,9 @@ std::map<std::string, RVal> Cm::mget(std::vector<std::string> keys)
 
 char* Cm::get(char *key, size_t *return_value_length)
 {
-    int j = backends[key[strlen(key)-1]].size();
+    int j = backends[this->getShard(key)].size();
     for (int i=0; i<j; i++) {
-        char* result = backends[key[strlen(key)-1]][i]->get(key, return_value_length);
+        char* result = backends[this->getShard(key)][i]->get(key, return_value_length);
         if (result != NULL) {
             int newValue_len;
             char *newValue = this->processGetDependency(result, *return_value_length, &newValue_len);
@@ -149,9 +155,9 @@ char* Cm::get(char *key, size_t *return_value_length)
 bool Cm::remove(char *key)
 {
     bool summary=true;
-    int j = backends[key[strlen(key)-1]].size();
+    int j = backends[this->getShard(key)].size();
     for (int i=0; i<j; i++) {
-        summary = summary && backends[key[strlen(key)-1]][i]->remove(key);
+        summary = summary && backends[this->getShard(key)][i]->remove(key);
     }
     return summary;
 }
