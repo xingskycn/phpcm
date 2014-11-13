@@ -32,7 +32,7 @@ bool CmWrapper::set(char *key, char *value, int value_len, char *dependency, lon
         IFDEBUG_E
         bool summary;
         summary = this->cmOld->set(key, value, value_len, dependency, expire);
-        return summary && this->cmNew->set(key, value, value_len, dependency, expire);
+        summary = this->cmNew->set(key, value, value_len, dependency, expire) && summary;
     } else {
         return this->cmOld->set(key, value, value_len, dependency, expire);
     }
@@ -57,7 +57,7 @@ bool CmWrapper::remove(char *key)
 
         bool summary;
         summary = this->cmOld->remove(key);
-        return summary && this->cmNew->remove(key);
+        summary = this->cmNew->remove(key) && summary;
     } else {
         return this->cmOld->remove(key);
     }
@@ -72,7 +72,8 @@ bool CmWrapper::add(char *key, char *value, int value_len, char *dependency, lon
 
         bool summary;
         summary = this->cmOld->add(key, value, value_len, dependency, expire);
-        return summary && this->cmNew->add(key, value, value_len, dependency, expire);
+        summary = this->cmNew->add(key, value, value_len, dependency, expire) && summary;
+        return summary;
     } else {
         return this->cmOld->add(key, value, value_len, dependency, expire);
     }
@@ -81,7 +82,8 @@ bool CmWrapper::add(char *key, char *value, int value_len, char *dependency, lon
 bool CmWrapper::flush()
 {
     bool summary = this->cmOld->flush();
-    return summary && this->cmNew->flush();
+    summary = this->cmNew->flush() && summary;
+    return summary;
 }
 
 bool CmWrapper::flush(long shardId)

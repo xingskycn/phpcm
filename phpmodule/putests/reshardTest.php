@@ -19,6 +19,59 @@ class ReshardTest extends PHPUnit_Framework_TestCase
 	$this->assertTrue($cmd instanceof Cm);
     }
 
+    public function testMget()
+    {
+	$this->clear();
+	$cm = new Cm([
+	    ['host'=>'127.0.0.1', 'port'=>11211],
+	    ['host'=>'127.0.0.1', 'port'=>11212],
+	], true);
+	$cm->set("b", "valueB");
+	$cm->set("c", "valueC");
+	$cm->set("d", "valueD");
+	$cm = new Cm([
+	    ['host'=>'127.0.0.1', 'port'=>11211],
+	    ['host'=>'127.0.0.1', 'port'=>11212],
+	    ['newhost'=>'127.0.0.1', 'port'=>11221],
+	], true);
+	$list = $cm->mget(array('b','c','d'));
+	$this->assertEquals($list['b'], 'valueB');
+	$this->assertEquals($list['c'], 'valueC');
+	$this->assertEquals($list['d'], 'valueD');
+    }
+
+    public function testRemove()
+    {
+	$this->clear();
+	$cm = new Cm([
+	    ['host'=>'127.0.0.1', 'port'=>11211],
+	    ['host'=>'127.0.0.1', 'port'=>11212],
+	], true);
+	$cm->set("b", "valueB");
+	$cm->set("c", "valueC");
+	$cm->set("d", "valueD");
+	$cm = new Cm([
+	    ['host'=>'127.0.0.1', 'port'=>11211],
+	    ['host'=>'127.0.0.1', 'port'=>11212],
+	    ['newhost'=>'127.0.0.1', 'port'=>11221],
+	], true);
+	$cm->remove("b");
+	$cm->remove("c");
+	$cm->remove("d");
+	$this->assertNull($cm->get("b"), "b is NULL");
+	$this->assertNull($cm->get("c"), "c is NULL");
+	$this->assertNull($cm->get("d"), "d is NULL");
+	$cm = new Cm([
+	    ['host'=>'127.0.0.1', 'port'=>11211],
+	    ['host'=>'127.0.0.1', 'port'=>11212],
+	    ['host'=>'127.0.0.1', 'port'=>11221],
+	], true);
+	$this->assertNull($cm->get("b"), "b is NULL");
+	$this->assertNull($cm->get("c"), "c is NULL");
+	$this->assertNull($cm->get("d"), "d is NULL");
+
+    }
+
     public function testAdd()
     {
 	$this->clear();
@@ -26,7 +79,6 @@ class ReshardTest extends PHPUnit_Framework_TestCase
 	$cm = new Cm([
 	    ['host'=>'127.0.0.1', 'port'=>11211],
 	    ['host'=>'127.0.0.1', 'port'=>11212],
-//	    ['newhost'=>'127.0.0.1', 'port'=>11221],
 	], true);
 	$this->assertTrue($cm->add("b", "valueB"));
 	$this->assertTrue($cm->add("c", "valueC"));
@@ -47,6 +99,7 @@ class ReshardTest extends PHPUnit_Framework_TestCase
 	    ['host'=>'127.0.0.1', 'port'=>11211],
 	    ['host'=>'127.0.0.1', 'port'=>11212],
 	    ['newhost'=>'127.0.0.1', 'port'=>11221],
+//	    ['host'=>'127.0.0.1', 'port'=>11221],
 	], true);
 	//old keys avalibaly
 	$this->assertEquals($cm->get("b"), "valueB", "check b in new config");
