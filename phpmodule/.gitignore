@@ -10,7 +10,6 @@ run-tests.php
 *.la
 *.lo
 *.guess
-*.in*
 config.h
 config.log
 config.nice

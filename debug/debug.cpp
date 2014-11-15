@@ -16,10 +16,11 @@ void debug_call_log(std::string mode, unsigned short breakMode, const char* x, c
 
 void stopLogging()
 {
-    openlog("PHPCM", 0, LOG_LOCAL6);
+//    setlogmask (LOG_UPTO (LOG_NOTICE || LOG_INFO || LOG_WARNING));
+    closelog();
 }
 
 void startLogging()
 {
-    closelog();
+    openlog("PHPCM", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL6);
 }
