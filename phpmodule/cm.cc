@@ -279,6 +279,29 @@ PHP_METHOD(cm, remove)
     }
 }
 
+PHP_METHOD(cm, delete)
+{
+    CmInterface *cm;
+    cm_object *obj = (cm_object *)zend_object_store_get_object(
+        getThis() TSRMLS_CC);
+    cm = obj->cm;
+    if (cm != NULL) {
+        char *key;
+        int key_len;
+
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key, &key_len) == FAILURE) {
+            RETURN_NULL();
+        }
+        if (strnlen(key, key_len+1) != key_len) {
+            //check quiet mode
+            zend_error(E_WARNING, "Non-string key!");
+            RETURN_NULL();
+        }
+
+        RETURN_BOOL(cm->remove(key));
+    }
+}
+
 
 //char* get(char *key, size_t *return_value_length)
 PHP_METHOD(cm, get)
@@ -437,6 +460,7 @@ zend_function_entry cm_methods[] = {
     PHP_ME(cm,  get,             NULL, ZEND_ACC_PUBLIC)
     PHP_ME(cm,  mget,            NULL, ZEND_ACC_PUBLIC)
     PHP_ME(cm,  remove,          NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(cm,  delete,          NULL, ZEND_ACC_PUBLIC)
     PHP_ME(cm,  flush,          NULL, ZEND_ACC_PUBLIC)
     {NULL, NULL, NULL}
 };
