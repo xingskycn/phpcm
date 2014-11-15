@@ -51,10 +51,19 @@ class SimpleTest extends PHPUnit_Framework_TestCase
     public function testDelete()
     {
 	$this->assertTrue($this->cm->set("key", "value"), "set success");
+	$this->assertTrue($this->cm->delete("key"), "remove success");
+	$this->assertFalse($this->cm->delete("key1"), "remove not required");
+	$this->assertNull($this->cm->get("key"));
+    }
+
+    public function testRemove()
+    {
+	$this->assertTrue($this->cm->set("key", "value"), "set success");
 	$this->assertTrue($this->cm->remove("key"), "remove success");
 	$this->assertFalse($this->cm->remove("key1"), "remove not required");
 	$this->assertNull($this->cm->get("key"));
     }
+
 
     public function testAdd()
     {

@@ -16,9 +16,9 @@ void debug_write_log_std(std::string mode, unsigned short breakMode, const char*
     char *outbuffer = new char [strlen(x) + strlen(y) + 1];
     sprintf(outbuffer, x, y);
     if ((breakMode == 0) && (mode.compare(__WARNING_TEXT) != 0 )) {
-	syslog(6, "(%d:%ld) [%s] %s\n", getpid(), pthread_self(), mode.c_str(), outbuffer);
+	syslog(LOG_INFO, "(%d:%ld) [%s] %s\n", getpid(), pthread_self(), mode.c_str(), outbuffer);
     } else {
-	syslog(6, "(%d:%ld) [%s] %s\n", getpid(), pthread_self(), mode.c_str(), outbuffer);
+	syslog(LOG_INFO, "(%d:%ld) [%s] %s\n", getpid(), pthread_self(), mode.c_str(), outbuffer);
     }
 
     delete outbuffer;
