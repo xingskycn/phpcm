@@ -101,7 +101,7 @@ PHP_METHOD(cm, __construct)
     zval *object = getThis();
     std::vector<ServerPair> configuration;
     std::vector<ServerPair> newconfiguration;
-    zval* zval_conf;
+    zval* zval_conf = NULL;
     bool useResharding = false;
     bool debug = false;
 
@@ -109,12 +109,12 @@ PHP_METHOD(cm, __construct)
         RETURN_NULL();
     }
 
-    if (Z_TYPE_P(zval_conf) != IS_ARRAY) {
+    if ((zval_conf == NULL) || (Z_TYPE_P(zval_conf) != IS_ARRAY)) {
         zend_error(E_RECOVERABLE_ERROR, "configuration is not Array");
         RETURN_NULL();
     }
 
-    HashTable *z_conf;
+    HashTable *z_conf = NULL;
     z_conf = Z_ARRVAL_P(zval_conf);
 
     HashPosition pointer;
@@ -225,17 +225,17 @@ PHP_METHOD(cm, flush)
         getThis() TSRMLS_CC);
     cm = obj->cm;
     if (cm != NULL) {
-        zval* zval_arr;
+        zval* zval_arr = NULL;
 
         if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|a", &zval_arr) == FAILURE) {
             RETURN_NULL();
         }
 
-        if (Z_TYPE_P(zval_arr) != IS_ARRAY) {
+        if ((zval_arr == NULL) || (Z_TYPE_P(zval_arr) != IS_ARRAY)) {
             RETURN_BOOL(cm->flush());
         }
 
-        HashTable *z_arr;
+        HashTable *z_arr = NULL;
         z_arr = Z_ARRVAL_P(zval_arr);
 
         HashPosition pointer;
@@ -343,13 +343,13 @@ PHP_METHOD(cm, mget)
     cm = obj->cm;
     if (cm != NULL) {
         std::vector<std::string> keys;
-        zval* zval_keys;
+        zval* zval_keys = NULL;
 
         if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &zval_keys) == FAILURE) {
             RETURN_NULL();
         }
 
-        if (Z_TYPE_P(zval_keys) != IS_ARRAY) {
+        if ((zval_keys == NULL) || (Z_TYPE_P(zval_keys) != IS_ARRAY)) {
             zend_error(E_RECOVERABLE_ERROR, "keys is not Array");
             RETURN_NULL();
         }
@@ -387,7 +387,7 @@ PHP_METHOD(cm, set)
         int key_len;
         char *value;
         int value_len;
-        char *dependency;
+        char *dependency = NULL;
         int dependency_len=0;
         long expire=0;
 
@@ -403,7 +403,7 @@ PHP_METHOD(cm, set)
             dependency = new char [1];
             strcpy(dependency, "");
         }
-        if (strnlen(dependency, dependency_len+1) != dependency_len) {
+        if ((dependency != NULL)&&(strnlen(dependency, dependency_len+1) != dependency_len)) {
             //check quiet mode
             zend_error(E_WARNING, "Non-string dependency key!");
             RETURN_NULL();
