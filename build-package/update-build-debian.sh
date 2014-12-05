@@ -7,7 +7,7 @@ set -x
 export EDITOR="/usr/bin/mcedit"
 
 name="php5-cm"
-version="1.1-2"
+version="1.1-3"
 rversion="1.1"
 src="phpcm"
 
